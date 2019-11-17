@@ -45,12 +45,38 @@ class Functions():
 
     ''' for displaying top 25 items for perticular category '''
     
-    def showTop25(self, category):
+    def showTopRecords(self, category):
         df_grpBy = pd.DataFrame(self.df[self.df['Year']=='2019'].groupby(by=category)['Invoice Amount (Translated)'].sum())
         df_grpBy.reset_index(drop= False, inplace=True)
         df_grpBy.sort_values(by='Invoice Amount (Translated)', inplace=True, ascending= False)
-        df_grpBy = df_grpBy.iloc[:25]
+        df_grpBy = df_grpBy.iloc[:10]
         temp = []
         for item in df_grpBy[category]:
             temp.append({'label': item, 'value': item}) 
+        return temp
+
+
+
+    def getColumns(self):
+        temp = []
+        for col in self.df.columns:
+            temp.append({'label': col, 'value': col})
+        return temp
+
+    
+    def getCountry(self, data= None):
+        temp = []
+        if data is None:
+            data = self.df
+
+        for col in data['Country'].unique():
+            temp.append({'label': col, 'value': col})
+        return temp
+    
+    def getCompanyCode(self, data= None):
+        temp = []
+        if data is None:
+            data = self.df
+        for col in data['Company Code'].unique():
+            temp.append({'label': col, 'value': col})
         return temp
