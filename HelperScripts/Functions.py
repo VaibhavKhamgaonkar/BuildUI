@@ -64,19 +64,13 @@ class Functions():
         return temp
 
     
-    def getCountry(self, data= None):
+    def getItems(self, parameter, data= None ):
         temp = []
         if data is None:
             data = self.df
 
-        for col in data['Country'].unique():
+        for col in data[parameter].unique():
             temp.append({'label': col, 'value': col})
         return temp
     
-    def getCompanyCode(self, data= None):
-        temp = []
-        if data is None:
-            data = self.df
-        for col in data['Company Code'].unique():
-            temp.append({'label': col, 'value': col})
-        return temp
+    
