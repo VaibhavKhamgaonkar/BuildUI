@@ -17,35 +17,9 @@ class Lookup_Functions():
 
             } 
 
-    def buildToolkit(self, item):
+    def buildFunctionKit(self, item):
         if item == 'importStatement' or item == 'import':
             return str(f"""
-
-
-            """)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#import speech_recognition as sr
 import os,time,numpy as np, pandas as pd 
 from collections import deque
 #from app import RecordingQueue
@@ -55,13 +29,15 @@ import holidays
 from fbprophet import Prophet
 import plotly.graph_objs as go
 from plotly.subplots import make_subplots
+            """)
 
-
+        elif item == 'init' or item == 'initialise':
+            return str(f"""
 class Functions():
     ''' 
     Contains various Functions
     '''
-    def __init__(self, dataPath = './Data/FinalData_V2.pkl', dataFileType = 'csv'):
+    def __init__(self, dataPath = {self.dataFilePath}, dataFileType = {self.dataFileType}):
         
         if dataFileType.lower() in ['pkl','pickle','cpickle']:
             with open(dataPath,'rb') as f: #MergedData_15_OCT.pkl
@@ -88,35 +64,84 @@ class Functions():
         self.value = None
         self.forecastData = ''
         self.df_grpData = ''
+            
+            """)
 
-    ''' for displaying top 25 items for perticular category '''
-    
-    def showTopRecords(self, category):
-        df_grpBy = pd.DataFrame(self.df[self.df['Year']=='2019'].groupby(by=category)['Invoice Amount (Translated)'].sum())
+        elif item.lower() == 'showtoprecords' or item.lower() == 'showtop':
+            return str(f""" 
+    def showTopRecords(self, category, targetColumn):
+        df_grpBy = pd.DataFrame(self.df.groupby(by=category)['targetColumn'].sum())
         df_grpBy.reset_index(drop= False, inplace=True)
-        df_grpBy.sort_values(by='Invoice Amount (Translated)', inplace=True, ascending= False)
+        df_grpBy.sort_values(by='targetColumn', inplace=True, ascending= False)
         df_grpBy = df_grpBy.iloc[:10]
         temp = []
         for item in df_grpBy[category]:
-            temp.append({'label': item, 'value': item}) 
-        return temp
+            temp.append(dict(label= item, value= item)) 
+        return temp        
+            
+            """)    
 
-
-
+        elif item.lower() == 'getcolumns' or item.lower() == 'getallcolumn':
+            return str(""" 
     def getColumns(self):
         temp = []
         for col in self.df.columns:
             temp.append({'label': col, 'value': col})
         return temp
+            
+            """)
 
-    
-    def getItems(self, parameter, data= None ):
+        elif item.lower() == 'getitems':
+            return str(""" 
+    def getItems(self, category, data= None):
         temp = []
         if data is None:
             data = self.df
 
-        for col in data[parameter].unique():
-            temp.append({'label': col, 'value': col})
+        for col in data[category].unique():
+            temp.append(dict(label= item, value= item))
         return temp
+           
+            """)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+
     
     
+
+if __name__ == "__main__":
+ 
+    obj = Lookup_Functions(dataFilePath='D:/Projects/@createUI/online_retail_II.xlsx', 
+    dataFileType = 'excel')
+    x = []
+    
+    x .append(obj.buildFunctionKit('import'))
+    x.append(obj.buildFunctionKit('init'))
+    x.append(obj.buildFunctionKit('showTopRecords'))
+    x.append(obj.buildFunctionKit('getColumns'))
+    x.append(obj.buildFunctionKit('getItems'))
+    
+
+    with open('./test.py','w') as f:
+        f.writelines(x)
