@@ -1,7 +1,7 @@
 import pandas as pd, numpy as np,os,time
 
 
-class ReferLookup():
+class Lookup_layout():
     ''' Class for refering the data  '''
     def __init__ (self, dataFilePath, dataFileType):
         
@@ -86,7 +86,7 @@ if __name__ == '__main__':
 
 if __name__ == "__main__":
  
-    obj = ReferLookup(dataFilePath='D:/Projects/@createUI/online_retail_II.xlsx', 
+    obj = Lookup_layout(dataFilePath='D:/Projects/@createUI/online_retail_II.xlsx', 
     dataFileType = 'excel')
     x = []
     x .append(obj.buildToolkit('import'))

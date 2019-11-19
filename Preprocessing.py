@@ -32,4 +32,26 @@ for col in df.columns:
     columnDict[col]= str(input('Enter:'))
 
 
-print(columnDict)
+noOfTargetColumn = len([item for item in columnDict.values() if item == '4'])
+noOfCatColumn = len([item for item in columnDict.values() if item == '1' or item == '3'])
+
+if '6' not in columnDict.values():
+    print('Dataset must have Date Column')
+
+
+print(f'Dictionary : {columnDict}\n, No of target columns are {noOfTargetColumn}\n, No of cat columns are {noOfCatColumn}')
+
+functions = []
+layoutScript = []
+
+
+
+
+
+
+
+
+
+
+
+

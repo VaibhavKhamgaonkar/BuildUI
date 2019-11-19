@@ -1,3 +1,49 @@
+import pandas as pd, numpy as np,os,time
+
+
+class Lookup_Functions():
+    ''' Class for refering the data  '''
+    def __init__ (self, dataFilePath, dataFileType):
+        
+        self.dataFileType = dataFileType
+        self.dataFilePath = dataFilePath
+        self.colAttributeDict = {
+                '1' : 'categorical',
+                '2' : 'continuous',
+                '3' : 'ordinal', 
+                '4': 'target',
+                '5': 'ignore', 
+                '6': 'date'
+
+            } 
+
+    def buildToolkit(self, item):
+        if item == 'importStatement' or item == 'import':
+            return str(f"""
+
+
+            """)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #import speech_recognition as sr
 import os,time,numpy as np, pandas as pd 
