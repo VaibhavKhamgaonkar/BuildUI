@@ -3,7 +3,7 @@ import pandas as pd, numpy as np,os,time
 
 class Lookup_Functions():
     ''' Class for refering the data  '''
-    def __init__ (self, dataFilePath, dataFileType):
+    def __init__ (self, dataFilePath, dataFileType, noOfCatColumn, noOfTargetColumn):
         
         self.dataFileType = dataFileType
         self.dataFilePath = dataFilePath
@@ -16,6 +16,10 @@ class Lookup_Functions():
                 '6': 'date'
 
             } 
+
+        self.noOfCatColumns = noOfCatColumn
+        self.noOfTargetColumns = noOfTargetColumn
+        
 
     def buildFunctionKit(self, item):
         if item == 'importStatement' or item == 'import':
@@ -57,10 +61,6 @@ class Functions():
                 self.df.reset_index(inplace=True, drop=True)
 
         print(self.df.shape)
-
-
- 
-
         self.value = None
         self.forecastData = ''
         self.df_grpData = ''
@@ -103,10 +103,340 @@ class Functions():
         return temp
            
             """)
+        
+        elif item.lower() == 'forecast':
+            return """
+    def forecast(self, category, parameter, targetAttribute, country, aggrFlag, countryHoliday,typeOfSeasonality,
+                        confidesneRange, seasonalityType , futureDataPoint,
+                        companyCode, purchasingGrp, profitCenter, costCenter, superCommodity, primaryCommodity, vendorDesc, glAccount, materialGroup, 
+                        forecastColumn ):
 
+        ''' Filtering the Data based on the arguments '''
+        if len(parameter) != 1:
+            ##print(f'Len(items) == {len(parameter), parameter}')
+            return None,None,None
 
+        finalDf = []
+        if aggrFlag is None:
+            aggrFlag = 'W'
+        if parameter is None:
+            return finalDf
 
+        df = self.filterDataOnParamter(self.df, country, companyCode, purchasingGrp, profitCenter, costCenter, superCommodity, primaryCommodity, vendorDesc, glAccount, materialGroup)
+        #df = df[df[forecastColumn] != '*' ]
+        #print(f'After removing "*" is of shape -------{df.shape}')
+       
+        tempdf = df[df[category] == parameter[0]]
+        df_grp = pd.DataFrame(tempdf.groupby(by=[targetAttribute])[forecastColumn].sum())
+        #imputing the missing days with 0
+        df_grp = df_grp.resample('D').sum().fillna(0)
+        '''Aggrigating the Data using seasonal factor'''
+        df_grp = df_grp.resample(aggrFlag).sum()
+        df_grp.reset_index(inplace=True)
+        ''' making DF as per Prophet format for time series analysis '''
+        df_grp.columns = ['ds', 'y']
+        #print(f'group by done df_grp { df_grp.shape}')
+        '''fitting the model'''
 
+        if seasonalityType == 'W':
+            name= 'Weekly'
+            period = 7.5
+            fourierOrder = 3
+            # dailySeasonality = False
+            # weeklySeasonality = True
+            # yearlySeasonality = True
+        elif seasonalityType == 'M':
+            name= 'monthly'
+            period = 30.5
+            fourierOrder = 5
+
+        elif seasonalityType == 'Y':
+            name= 'yearly'
+            period = 365
+            fourierOrder = 10
+        elif seasonalityType == 'D':
+            name= 'Daily'
+            period = 1.5
+            fourierOrder = 2
+        else:
+            name= 'custom'
+            period = 7.5
+            fourierOrder = 3
+          
+        m = Prophet(interval_width=(confidesneRange/100.0),yearly_seasonality=False, weekly_seasonality=False, daily_seasonality=False,
+            seasonality_mode=typeOfSeasonality,holidays_prior_scale=1,
+            changepoint_prior_scale=2)
+        if countryHoliday is not None:
+            m.add_country_holidays(country_name=countryHoliday)
+        
+        if seasonalityType is not None:
+            m.add_seasonality(name=name, period=period, fourier_order=fourierOrder)
+        
+        '''Fitting the Data'''
+        m.fit(df_grp)
+
+        ''' Creaing the Future Datastamps '''
+        future = m.make_future_dataframe(futureDataPoint)
+        forecast = m.predict(future)
+        self.forecastData = forecast
+        self.df_grpData = df_grp
+        return forecast,df_grp
+
+            """
+        elif item.lower() == 'getgraph':
+            return """
+    def getGraph(self,forecast, df_grp, parameters, futureDataPoint):
+        fig = go.Figure()
+        # Add traces
+        fig.add_trace(go.Scatter(x=forecast['ds'], y=forecast['yhat_lower'],
+                            mode='lines',
+                                opacity= 0.2,
+                                fill='tonextx',
+                                fillcolor='#afc9c8',
+                                marker_color= '#afc9c8',
+                                
+                            name='LowerBound'))
+        fig.add_trace(go.Scatter(x=forecast['ds'], y=forecast['yhat_upper'],
+                            mode='lines',
+                                #opacity= 0.1,
+                                
+                                opacity= 0.2,
+                                    fill='tonextx',
+                                    fillcolor= '#afc9c8', #'turquoise',
+                                marker_color= '#afc9c8',
+                            name='UpperBound'))
+
+        # fig.add_trace(go.Scatter(x=forecast['ds'], y=forecast['yhat_upper'],
+        #                     mode='lines',
+        #                          opacity= 0.3,
+        #                     name='linesUpper'))
+
+        fig.add_trace(go.Scatter(x=df_grp['ds'], y=df_grp['y'],
+                            mode='markers+lines',
+                            marker_color= 'orange',
+                            name='Input_data'))
+
+        fig.add_trace(go.Scatter(x=forecast['ds'], y=forecast['yhat'],
+                            mode='lines',
+                            opacity = 1,
+                            marker_color= 'blue',
+                            name='Prediction'))
+        
+        fig.update_layout(title= f"Forecast for {parameters[0]} for next {futureDataPoint} days ")
+        return fig
+
+            """
+
+        elif item.lower() == 'getdecompositiongraph':
+            return """
+    def getDecompositionGraph(self,forecast, df_grp, holiday, checkSeasonality):
+        #print(forecast.columns)
+        referCode = {'W':'Weekly',
+                    'M': 'monthly',
+                    'D':'Daily',
+                    'Y':'yearly',
+                    'C':'CustomDates'
+                        }
+
+        fig = go.Figure()
+        fig = make_subplots(rows=2, cols=2, subplot_titles=('Trend', 'Holidays', f'{referCode[checkSeasonality]} Trend'))
+        # Add traces
+        fig.add_trace(go.Scatter(x=forecast['ds'].iloc[len(df_grp):], y=forecast['trend_lower'].iloc[len(df_grp):].values,
+                            mode='lines',
+                                opacity= 0.7,
+                                #fill='tonextx',
+                                fillcolor='#75797d',
+                                marker_color= '#d2d5d9',
+                                name='LowerBound'),row=1,col=1)
+        fig.add_trace(go.Scatter(x=forecast['ds'].loc[len(df_grp):], y=forecast['trend_upper'].iloc[len(df_grp):].values,
+                                mode='lines',
+                                #opacity= 0.1,
+                                opacity= 0.7,
+                                    fill='tonextx',
+                                    fillcolor= '#75797d', #'turquoise',
+                                marker_color= '#75797d',
+                            name='UpperBound'),row=1,col=1)
+        fig.add_trace(go.Scatter(x=forecast['ds'], y=forecast['trend'],
+                            mode='lines',
+                                opacity= 1,
+                                #fill='tonextx',
+                                #fillcolor='#afc9c8',
+                                #marker_color= '#afc9c8',
+                                
+                            name='LowerBound'), row=1,col=1)
+        if holiday is not None:
+            fig.add_trace(go.Scatter(x=forecast['ds'], y=[str(item*100.0) +'%' for item in forecast['holidays']],
+                            mode='lines',
+                                opacity= 0.8,
+                                text = [str(np.round(item*100.0,3)) +'%' for item in forecast['holidays']],
+                                #fill='tonextx',
+                                #fillcolor='#afc9c8',
+                                #marker_color= '#afc9c8',
+                                
+                            name='Holiday'), row=1,col=2)
+        
+        fig.add_trace(go.Scatter(x=forecast['ds'], y=forecast[referCode[checkSeasonality]],
+                                mode='lines',
+                                    opacity= 0.8,
+                                    #fill='tonextx',
+                                    #fillcolor='#afc9c8',
+                                    #marker_color= '#afc9c8',
+                                    
+                                name=f'{referCode[checkSeasonality]} Trend'), row=2,col=1)
+        
+        fig.update_layout(title= f"Decomposition Plot")
+        return fig
+
+        """
+
+        elif item.lower() == 'getdata':
+            return """
+    def getData(self, primaryCol, parameters, country,  aggrFlag, targetCol,
+                    companyCode, purchasingGrp, profitCenter, costCenter, superCommodity, primaryCommodity, 
+                    vendorDesc, glAccount, materialGroup, forecastColumn):
+        
+        '''  forcastColumn is the name of collumn used for forcasting either quantity or Amount'''
+        finalDf = []
+        if aggrFlag is None:
+            aggrFlag = 'W'
+        if parameters is None:
+            return finalDf
+
+        df = self.filterDataOnParamter(self.df, country, companyCode, purchasingGrp, profitCenter, costCenter, superCommodity, 
+                                        primaryCommodity, vendorDesc, glAccount, materialGroup,forecastColumn)
+        if len(parameters)==1: 
+            if targetCol == 'Calendar Day':
+                tempdf = df[df[primaryCol] == parameters[0]]
+                df_grp = pd.DataFrame(tempdf.groupby(by=[targetCol])[forecastColumn].sum())
+                ''' making the Time series Data Consistense '''
+                df_grp = df_grp.resample('D').sum().fillna(0)
+                ''' Aggregating the Data'''
+                df_grp = df_grp.resample(aggrFlag).sum()
+                df_grp.reset_index(inplace= True)
+                finalDf.append(df_grp)
+                return finalDf
+            
+            else:
+                temp = df[df[primaryCol]==parameters[0]][[targetCol, forecastColumn ]].groupby(targetCol).sum().reset_index()
+                x = pd.DataFrame(df[df[primaryCol]==parameters[0]][targetCol].value_counts()).reset_index()
+                x['Percent'] = x[targetCol].apply(lambda a : a*100 /len(df[df[primaryCol]==parameters[0]]))
+                #print(x.head())
+                x.columns = ['index', str(targetCol) + '_Counts', str(parameters[0]) + '_In-Percentage']
+                temp = pd.concat([temp,x], axis=1)
+                temp.drop('index',axis=1,inplace = True)
+                #print(f'Size of Data before displaying result is {temp}')
+                finalDf.append(temp)
+                #print(temp.head())
+                #print('\n\n\n\n\n\n\n')
+
+                return finalDf
+        else:
+            for parameter in parameters:
+                if targetCol != 'Calendar Day':
+                    temp = df[df[primaryCol]==parameter][[targetCol, forecastColumn ]].groupby(targetCol).sum().reset_index()
+                    x = pd.DataFrame(df[df[primaryCol]==parameter][targetCol].value_counts()).reset_index()
+                    x['Percent'] = x[targetCol].apply(lambda a : a*100 /len(df[df[primaryCol]==parameter]))
+                    ##print(x.head())
+                    x.columns = ['index', str(targetCol) + '_Counts', str(parameter) + '_In-Percentage']
+                    temp = pd.concat([temp,x], axis=1)
+                    temp.drop('index',axis=1,inplace = True)
+                    finalDf.append(temp)
+                    ##print(temp.head())
+                    ##print('\n\n\n\n\n\n\n')
+            
+                else:
+                    #print('Multiple Entries $$$$$$')
+                    tempdf = df[df[primaryCol] == parameter]
+                    df_grp = pd.DataFrame(tempdf.groupby(by=[targetCol])[forecastColumn].sum())
+                    ''' making the Time series Data Consistense '''
+                    df_grp = df_grp.resample('D').sum().fillna(0)
+                    ''' Aggregating the Data'''
+                    df_grp = df_grp.resample(aggrFlag).sum()
+                    df_grp.reset_index(inplace= True)
+                    finalDf.append(df_grp)
+                    #print(finalDf)
+                
+            return finalDf
+
+            """
+
+        elif item.lower() == 'getdata':
+            return """
+
+    def filterDataOnParamter(self, df, countryDropDown = None, companyCode=None, purchasingGrp=None, profitCenter=None, costCenter=None, superCommodity=None,
+                             primaryCommodity=None, vendorDesc=None, glAccount=None, materialGroup=None, forecastColumn='Invoice Quantity'):
+
+        df = df[df[forecastColumn] != '*' ]
+        print(f'After removing "*" is of shape -------{df.shape}')
+        
+        ''' Filtering the Data based on Filtering parameters'''
+        '''0. using CountryDropDown'''
+        if countryDropDown is None:
+            df = df
+        else:
+            df = df[df['Country']==countryDropDown]
+        #print(f'After Filteration Dataframe is of shape country = {countryDropDown, type(countryDropDown)}-------{df.shape}')
+        '''1. Company Code'''
+        print(f'Company code is --=== {companyCode}')
+        if companyCode is None:
+            df = df
+        else:
+            df = df[df['Company Code']==companyCode]
+        print(f'After Filteration Dataframe is of shape "Company Code" = {companyCode, type(companyCode)}-------{df.shape}')
+
+        '''2. Purchasing group'''
+        if purchasingGrp is None:
+            df = df
+        else:
+            df = df[df['Purchasing Group Desc'] == purchasingGrp]
+      
+        #print(f'After Filteration Dataframe is of shape Purchasing grp = {purchasingGrp}-------{df.shape}')
+
+        '''3. Profit Center Desc'''
+        if profitCenter is None:
+            df = df
+        else:
+            df = df[df['Profit Center Desc'] == profitCenter]
+        
+        '''4. Vendor Desc'''
+        if vendorDesc is None:
+            df = df
+        else:
+            df = df[df['Vendor Desc'] == vendorDesc]
+
+        '''5. Cost Center'''
+        if costCenter is None:
+            df = df
+        else:
+            df = df[df['Cost Center'] == costCenter]
+        
+        '''6. Super Commodity'''
+        if superCommodity is None:
+            df = df
+        else:
+            df = df[df['Super Commodity'] == superCommodity]
+
+        '''7. Primary Commodity'''
+        if primaryCommodity is None:
+            df = df
+        else:
+            df = df[df['Primary Commodity'] == primaryCommodity]
+
+        '''8. G/L Account'''
+        if glAccount is None:
+            df = df
+        else:
+            df = df[df['G/L Account Desc'] == glAccount]
+
+        '''9. Material Group Desc'''
+        if materialGroup is None:
+            df = df
+        else:
+            df = df[df['Material Group Desc'] == materialGroup]
+
+        return df
+
+        """
 
 
 
@@ -141,7 +471,10 @@ if __name__ == "__main__":
     x.append(obj.buildFunctionKit('showTopRecords'))
     x.append(obj.buildFunctionKit('getColumns'))
     x.append(obj.buildFunctionKit('getItems'))
-    
+    x.append(obj.buildFunctionKit('forecast'))
+    x.append(obj.buildFunctionKit('getGraph'))
+
+
 
     with open('./test.py','w') as f:
         f.writelines(x)
