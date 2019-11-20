@@ -19,7 +19,20 @@ class Lookup_Functions():
 
         self.noOfCatColumns = noOfCatColumn
         self.noOfTargetColumns = noOfTargetColumn
+
+        self.paramterList = 'self, category, parameter, targetAttribute, aggrFlag, countryHoliday, typeOfSeasonality, confidesneRange, seasonalityType , futureDataPoint'
+        self.paramterList = self.creatParamters(number = self.noOfCatColumns, paramterList=self.paramterList) 
         
+
+
+
+
+
+    def creatParamters(self, number, paramterList):
+        for i in range(number):
+            paramterList += ',' + 'category_' + str(i) 
+        return paramterList
+
 
     def buildFunctionKit(self, item):
         if item == 'importStatement' or item == 'import':
@@ -41,7 +54,7 @@ class Functions():
     ''' 
     Contains various Functions
     '''
-    def __init__(self, dataPath = {self.dataFilePath}, dataFileType = {self.dataFileType}):
+    def __init__(self, dataPath = '{self.dataFilePath}', dataFileType = '{self.dataFileType}''):
         
         if dataFileType.lower() in ['pkl','pickle','cpickle']:
             with open(dataPath,'rb') as f: #MergedData_15_OCT.pkl

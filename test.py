@@ -13,7 +13,7 @@ class Functions():
     ''' 
     Contains various Functions
     '''
-    def __init__(self, dataPath = D:/Projects/@createUI/online_retail_II.xlsx, dataFileType = excel):
+    def __init__(self, dataPath = 'D:/Projects/@createUI/online_retail_II.xlsx', dataFileType = 'excel'):
 
         if dataFileType.lower() in ['pkl','pickle','cpickle']:
             with open(dataPath,'rb') as f: #MergedData_15_OCT.pkl
