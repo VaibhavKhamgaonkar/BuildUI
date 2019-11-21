@@ -62,18 +62,14 @@ class Functions():
             data = self.df
 
         for col in data[category].unique():
-            temp.append(dict(label= item, value= item))
+            temp.append(dict(label= col, value= col))
         return temp
 
             
-    def forecast(self, category, parameter, targetAttribute, country, aggrFlag, countryHoliday,typeOfSeasonality,
-                        confidesneRange, seasonalityType , futureDataPoint,
-                        companyCode, purchasingGrp, profitCenter, costCenter, superCommodity, primaryCommodity, vendorDesc, glAccount, materialGroup, 
-                        forecastColumn ):
+    def forecast(self, category, parameter, targetAttribute, aggrFlag, countryHoliday,typeOfSeasonality,confidesneRange, seasonalityType , futureDataPoint, category_0, category_1, category_2, category_3,forecastColumn ):
 
         ''' Filtering the Data based on the arguments '''
         if len(parameter) != 1:
-            ##print(f'Len(items) == {len(parameter), parameter}')
             return None,None,None
 
         finalDf = []
@@ -82,10 +78,8 @@ class Functions():
         if parameter is None:
             return finalDf
 
-        df = self.filterDataOnParamter(self.df, country, companyCode, purchasingGrp, profitCenter, costCenter, superCommodity, primaryCommodity, vendorDesc, glAccount, materialGroup)
-        #df = df[df[forecastColumn] != '*' ]
-        #print(f'After removing "*" is of shape -------{df.shape}')
-
+        df = self.filterDataOnParamter(self.df, category_0, category_1, category_2, category_3)
+        # df = self.filterDataOnParamter(self.df, country, companyCode, purchasingGrp, profitCenter, costCenter, superCommodity, primaryCommodity, vendorDesc, glAccount, materialGroup)
         tempdf = df[df[category] == parameter[0]]
         df_grp = pd.DataFrame(tempdf.groupby(by=[targetAttribute])[forecastColumn].sum())
         #imputing the missing days with 0
@@ -95,7 +89,7 @@ class Functions():
         df_grp.reset_index(inplace=True)
         ''' making DF as per Prophet format for time series analysis '''
         df_grp.columns = ['ds', 'y']
-        #print(f'group by done df_grp { df_grp.shape}')
+
         '''fitting the model'''
 
         if seasonalityType == 'W':
@@ -184,3 +178,88 @@ class Functions():
         return fig
 
             
+    def getData(self, primaryCol, parameters, aggrFlag, targetCol, category_0, category_1, category_2, category_3, forecastColumn ):
+
+        '''  forcastColumn is the name of collumn used for forcasting either quantity or Amount'''
+        finalDf = []
+        if aggrFlag is None:
+            aggrFlag = 'W'
+        if parameters is None:
+            return finalDf
+
+        df = self.filterDataOnParamter(self.df, category_0, category_1, category_2, category_3)
+        if len(parameters)==1: 
+            if targetCol == 'Calendar Day':
+                tempdf = df[df[primaryCol] == parameters[0]]
+                df_grp = pd.DataFrame(tempdf.groupby(by=[targetCol])[forecastColumn].sum())
+                ''' making the Time series Data Consistense '''
+                df_grp = df_grp.resample('D').sum().fillna(0)
+                ''' Aggregating the Data'''
+                df_grp = df_grp.resample(aggrFlag).sum()
+                df_grp.reset_index(inplace= True)
+                finalDf.append(df_grp)
+                return finalDf
+
+            else:
+                temp = df[df[primaryCol]==parameters[0]][[targetCol, forecastColumn ]].groupby(targetCol).sum().reset_index()
+                x = pd.DataFrame(df[df[primaryCol]==parameters[0]][targetCol].value_counts()).reset_index()
+                x['Percent'] = x[targetCol].apply(lambda a : a*100 /len(df[df[primaryCol]==parameters[0]]))
+                #print(x.head())
+                x.columns = ['index', str(targetCol) + '_Counts', str(parameters[0]) + '_In-Percentage']
+                temp = pd.concat([temp,x], axis=1)
+                temp.drop('index',axis=1,inplace = True)
+                finalDf.append(temp)
+
+                return finalDf
+        else:
+            for parameter in parameters:
+                if targetCol != 'Calendar Day':
+                    temp = df[df[primaryCol]==parameter][[targetCol, forecastColumn ]].groupby(targetCol).sum().reset_index()
+                    x = pd.DataFrame(df[df[primaryCol]==parameter][targetCol].value_counts()).reset_index()
+                    x['Percent'] = x[targetCol].apply(lambda a : a*100 /len(df[df[primaryCol]==parameter]))
+                    ##print(x.head())
+                    x.columns = ['index', str(targetCol) + '_Counts', str(parameter) + '_In-Percentage']
+                    temp = pd.concat([temp,x], axis=1)
+                    temp.drop('index',axis=1,inplace = True)
+                    finalDf.append(temp)
+
+                else:
+                    #print('Multiple Entries $$$$$$')
+                    tempdf = df[df[primaryCol] == parameter]
+                    df_grp = pd.DataFrame(tempdf.groupby(by=[targetCol])[forecastColumn].sum())
+                    ''' making the Time series Data Consistense '''
+                    df_grp = df_grp.resample('D').sum().fillna(0)
+                    ''' Aggregating the Data'''
+                    df_grp = df_grp.resample(aggrFlag).sum()
+                    df_grp.reset_index(inplace= True)
+                    finalDf.append(df_grp)
+
+
+            return finalDf
+
+            
+    def filterDataOnParamter(self, df, forecastColumn, category_0=None, category_1=None, category_2=None, category_3=None, ):
+                 
+        if category_0 is None:
+            df = df
+        else: 
+            df[df['Invoice']==category_0]
+          
+        if  category_1 is None:
+            df = df
+        else: 
+            df[df['StockCode']== category_1]
+          
+        if  category_2 is None:
+            df = df
+        else: 
+            df[df['Customer ID']== category_2]
+          
+        if  category_3 is None:
+            df = df
+        else: 
+            df[df['Country']== category_3]
+          
+        return df
+
+                    

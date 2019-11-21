@@ -1,9 +1,9 @@
-import pandas as pd, numpy as np,os,time
 
+import pandas as pd, numpy as np,os,time
 
 class Lookup_Functions():
     ''' Class for refering the data  '''
-    def __init__ (self, dataFilePath, dataFileType, noOfCatColumn, noOfTargetColumn):
+    def __init__ (self, dataFilePath, dataFileType, noOfCatColumn, noOfTargetColumn, details):
         
         self.dataFileType = dataFileType
         self.dataFilePath = dataFilePath
@@ -19,18 +19,38 @@ class Lookup_Functions():
 
         self.noOfCatColumns = noOfCatColumn
         self.noOfTargetColumns = noOfTargetColumn
-
-        self.paramterList = 'self, category, parameter, targetAttribute, aggrFlag, countryHoliday, typeOfSeasonality, confidesneRange, seasonalityType , futureDataPoint'
-        self.paramterList = self.creatParamters(number = self.noOfCatColumns, paramterList=self.paramterList) 
-        
-
+        self.categories = [k for k,v in details.items() if v == '1' or v == '3']
+        self.dateColumn = [k for k,v in details.items() if v == '6']
+        self.targetColumns = [k for k,v in details.items() if v == '4']
 
 
 
+        #self.paramterList = 'self, category, parameter, targetAttribute, aggrFlag, countryHoliday, typeOfSeasonality, confidesneRange, seasonalityType , futureDataPoint'
+        #self.paramterList = self.creatParamters(number = self.noOfCatColumns, paramterList=self.paramterList) 
+
+
+
+
+    def buildStatement(self, cat, val):
+        return f""" 
+        if {cat} is None:
+            df = df
+        else: 
+            df[df['{val}']=={cat}]
+         """
 
     def creatParamters(self, number, paramterList):
         for i in range(number):
-            paramterList += ',' + 'category_' + str(i) 
+            if len(paramterList)>1:
+                paramterList += ', ' + 'category_' + str(i)
+            else:
+                paramterList += 'category_' + str(i)
+        return paramterList
+
+    
+    def creatParamtersNew(self, number, paramterList):
+        for i in range(number):
+            paramterList += ', ' + 'category_' + str(i) + '=None'
         return paramterList
 
 
@@ -54,7 +74,7 @@ class Functions():
     ''' 
     Contains various Functions
     '''
-    def __init__(self, dataPath = '{self.dataFilePath}', dataFileType = '{self.dataFileType}''):
+    def __init__(self, dataPath = '{self.dataFilePath}', dataFileType = '{self.dataFileType}'):
         
         if dataFileType.lower() in ['pkl','pickle','cpickle']:
             with open(dataPath,'rb') as f: #MergedData_15_OCT.pkl
@@ -112,21 +132,19 @@ class Functions():
             data = self.df
 
         for col in data[category].unique():
-            temp.append(dict(label= item, value= item))
+            temp.append(dict(label= col, value= col))
         return temp
            
             """)
         
         elif item.lower() == 'forecast':
-            return """
-    def forecast(self, category, parameter, targetAttribute, country, aggrFlag, countryHoliday,typeOfSeasonality,
-                        confidesneRange, seasonalityType , futureDataPoint,
-                        companyCode, purchasingGrp, profitCenter, costCenter, superCommodity, primaryCommodity, vendorDesc, glAccount, materialGroup, 
-                        forecastColumn ):
+            para = 'def forecast(self, category, parameter, targetAttribute, aggrFlag, countryHoliday,typeOfSeasonality,confidesneRange, seasonalityType , futureDataPoint'
+            param = 'df = self.filterDataOnParamter(self.df'
+            return f"""
+    {self.creatParamters(self.noOfCatColumns, para)},forecastColumn ):
 
         ''' Filtering the Data based on the arguments '''
         if len(parameter) != 1:
-            ##print(f'Len(items) == {len(parameter), parameter}')
             return None,None,None
 
         finalDf = []
@@ -135,10 +153,8 @@ class Functions():
         if parameter is None:
             return finalDf
 
-        df = self.filterDataOnParamter(self.df, country, companyCode, purchasingGrp, profitCenter, costCenter, superCommodity, primaryCommodity, vendorDesc, glAccount, materialGroup)
-        #df = df[df[forecastColumn] != '*' ]
-        #print(f'After removing "*" is of shape -------{df.shape}')
-       
+        {self.creatParamters(self.noOfCatColumns, param)})
+        # df = self.filterDataOnParamter(self.df, country, companyCode, purchasingGrp, profitCenter, costCenter, superCommodity, primaryCommodity, vendorDesc, glAccount, materialGroup)
         tempdf = df[df[category] == parameter[0]]
         df_grp = pd.DataFrame(tempdf.groupby(by=[targetAttribute])[forecastColumn].sum())
         #imputing the missing days with 0
@@ -148,7 +164,7 @@ class Functions():
         df_grp.reset_index(inplace=True)
         ''' making DF as per Prophet format for time series analysis '''
         df_grp.columns = ['ds', 'y']
-        #print(f'group by done df_grp { df_grp.shape}')
+        
         '''fitting the model'''
 
         if seasonalityType == 'W':
@@ -303,10 +319,10 @@ class Functions():
         """
 
         elif item.lower() == 'getdata':
-            return """
-    def getData(self, primaryCol, parameters, country,  aggrFlag, targetCol,
-                    companyCode, purchasingGrp, profitCenter, costCenter, superCommodity, primaryCommodity, 
-                    vendorDesc, glAccount, materialGroup, forecastColumn):
+            para = 'def getData(self, primaryCol, parameters, aggrFlag, targetCol'
+            param = 'df = self.filterDataOnParamter(self.df'
+            return f"""
+    {self.creatParamters(self.noOfCatColumns, para)}, forecastColumn ):
         
         '''  forcastColumn is the name of collumn used for forcasting either quantity or Amount'''
         finalDf = []
@@ -315,8 +331,7 @@ class Functions():
         if parameters is None:
             return finalDf
 
-        df = self.filterDataOnParamter(self.df, country, companyCode, purchasingGrp, profitCenter, costCenter, superCommodity, 
-                                        primaryCommodity, vendorDesc, glAccount, materialGroup,forecastColumn)
+        {self.creatParamters(self.noOfCatColumns, param)})
         if len(parameters)==1: 
             if targetCol == 'Calendar Day':
                 tempdf = df[df[primaryCol] == parameters[0]]
@@ -337,11 +352,8 @@ class Functions():
                 x.columns = ['index', str(targetCol) + '_Counts', str(parameters[0]) + '_In-Percentage']
                 temp = pd.concat([temp,x], axis=1)
                 temp.drop('index',axis=1,inplace = True)
-                #print(f'Size of Data before displaying result is {temp}')
                 finalDf.append(temp)
-                #print(temp.head())
-                #print('\n\n\n\n\n\n\n')
-
+                
                 return finalDf
         else:
             for parameter in parameters:
@@ -354,9 +366,7 @@ class Functions():
                     temp = pd.concat([temp,x], axis=1)
                     temp.drop('index',axis=1,inplace = True)
                     finalDf.append(temp)
-                    ##print(temp.head())
-                    ##print('\n\n\n\n\n\n\n')
-            
+                    
                 else:
                     #print('Multiple Entries $$$$$$')
                     tempdf = df[df[primaryCol] == parameter]
@@ -367,90 +377,39 @@ class Functions():
                     df_grp = df_grp.resample(aggrFlag).sum()
                     df_grp.reset_index(inplace= True)
                     finalDf.append(df_grp)
-                    #print(finalDf)
+                    
                 
             return finalDf
 
             """
 
-        elif item.lower() == 'getdata':
-            return """
-
-    def filterDataOnParamter(self, df, countryDropDown = None, companyCode=None, purchasingGrp=None, profitCenter=None, costCenter=None, superCommodity=None,
-                             primaryCommodity=None, vendorDesc=None, glAccount=None, materialGroup=None, forecastColumn='Invoice Quantity'):
-
-        df = df[df[forecastColumn] != '*' ]
-        print(f'After removing "*" is of shape -------{df.shape}')
-        
-        ''' Filtering the Data based on Filtering parameters'''
-        '''0. using CountryDropDown'''
-        if countryDropDown is None:
-            df = df
-        else:
-            df = df[df['Country']==countryDropDown]
-        #print(f'After Filteration Dataframe is of shape country = {countryDropDown, type(countryDropDown)}-------{df.shape}')
-        '''1. Company Code'''
-        print(f'Company code is --=== {companyCode}')
-        if companyCode is None:
-            df = df
-        else:
-            df = df[df['Company Code']==companyCode]
-        print(f'After Filteration Dataframe is of shape "Company Code" = {companyCode, type(companyCode)}-------{df.shape}')
-
-        '''2. Purchasing group'''
-        if purchasingGrp is None:
-            df = df
-        else:
-            df = df[df['Purchasing Group Desc'] == purchasingGrp]
-      
-        #print(f'After Filteration Dataframe is of shape Purchasing grp = {purchasingGrp}-------{df.shape}')
-
-        '''3. Profit Center Desc'''
-        if profitCenter is None:
-            df = df
-        else:
-            df = df[df['Profit Center Desc'] == profitCenter]
-        
-        '''4. Vendor Desc'''
-        if vendorDesc is None:
-            df = df
-        else:
-            df = df[df['Vendor Desc'] == vendorDesc]
-
-        '''5. Cost Center'''
-        if costCenter is None:
-            df = df
-        else:
-            df = df[df['Cost Center'] == costCenter]
-        
-        '''6. Super Commodity'''
-        if superCommodity is None:
-            df = df
-        else:
-            df = df[df['Super Commodity'] == superCommodity]
-
-        '''7. Primary Commodity'''
-        if primaryCommodity is None:
-            df = df
-        else:
-            df = df[df['Primary Commodity'] == primaryCommodity]
-
-        '''8. G/L Account'''
-        if glAccount is None:
-            df = df
-        else:
-            df = df[df['G/L Account Desc'] == glAccount]
-
-        '''9. Material Group Desc'''
-        if materialGroup is None:
-            df = df
-        else:
-            df = df[df['Material Group Desc'] == materialGroup]
-
+        elif item.lower() == 'filterDataOnParamter' or item.lower()=='filterdata':
+            parameter = 'def filterDataOnParamter(self, df, forecastColumn'
+            #c = self.creatParamtersNew(self.noOfCatColumns, parameter)},
+            temp = f"""
+    {self.creatParamtersNew(self.noOfCatColumns, parameter)}, ):
+                """
+            for cat,val in zip(self.creatParamters(self.noOfCatColumns,'').split(','), self.categories):
+                temp += self.buildStatement(cat,val )
+            
+            temp += """ 
         return df
+        
+                    """
+        
 
-        """
+            return temp
+        
+        
+            
+        
 
+            
+
+        
+
+
+    
 
 
 
@@ -475,8 +434,8 @@ class Functions():
 
 if __name__ == "__main__":
  
-    obj = Lookup_Functions(dataFilePath='D:/Projects/@createUI/online_retail_II.xlsx', 
-    dataFileType = 'excel')
+    obj = Lookup_Functions(dataFilePath='D:/Projects/@createUI/online_retail_II.xlsx', noOfCatColumn=4,noOfTargetColumn=2, 
+    dataFileType = 'excel', details = {'Invoice': '1', 'StockCode': '1', 'Description': '5', 'Quantity': '4', 'InvoiceDate': '6', 'Price': '4', 'Customer ID': '1', 'Country': '1'})
     x = []
     
     x .append(obj.buildFunctionKit('import'))
@@ -486,6 +445,8 @@ if __name__ == "__main__":
     x.append(obj.buildFunctionKit('getItems'))
     x.append(obj.buildFunctionKit('forecast'))
     x.append(obj.buildFunctionKit('getGraph'))
+    x.append(obj.buildFunctionKit('getData'))
+    x.append(obj.buildFunctionKit('filterData'))
 
 
 
