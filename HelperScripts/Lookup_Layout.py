@@ -27,7 +27,7 @@ class Lookup_layout():
     def buildToolkit(self, item):
         if item == 'importStatement' or item == 'import':
             return str(f"""
-# -*- coding: utf-8 -*-
+
 import numpy as np, os, time, pandas as pd 
 from collections import deque 
 import dash_core_components as dcc 
@@ -37,7 +37,7 @@ import dash_html_components as html
 from dash.dependencies import Input, Output 
 #from HelperScripts.Lookup_Functions import Lookup_Functions
 #from HelperScripts.Lookup_Layout import Lookup_layout
-from Helper
+from HelperScripts.Functions import Functions
 import pickle 
 import dash_table 
 from datetime import datetime 
@@ -407,5 +407,5 @@ if __name__ == "__main__":
     x.append(obj.buildToolkit('closeLayout'))
     x.append(obj.buildToolkit('mainBlock'))
 
-    with open('./test.py','w') as f:
+    with open('./test.py','w',encoding="utf-8") as f:
         f.writelines(x)

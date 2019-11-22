@@ -13,19 +13,19 @@ class Functions():
     ''' 
     Contains various Functions
     '''
-    def __init__(self, dataPath = 'D:/Projects/@createUI/online_retail_II.xlsx', dataFileType = 'excel'):
+    def __init__(self, dataFilePath = 'D:/Projects/@createUI/online_retail_II.xlsx', dataFileType = 'excel'):
 
         if dataFileType.lower() in ['pkl','pickle','cpickle']:
-            with open(dataPath,'rb') as f: #MergedData_15_OCT.pkl
+            with open(dataFilePath,'rb') as f: #MergedData_15_OCT.pkl
                 #pickle.dump(data,f)
                 self.df = pickle.load(f)
         #self.df.reset_index(inplace=True,drop=True)
         elif dataFileType == 'csv':
-            self.df = pd.read_csv(dataPath)
+            self.df = pd.read_csv(dataFilePath)
 
         elif dataFileType == 'excel':
             self.df = pd.DataFrame()
-            x = pd.read_excel(dataPath,sheet_name=None)
+            x = pd.read_excel(dataFilePath,sheet_name=None)
             if type(x) != 'pandas.core.frame.DataFrame':
                 print(f'Creating Dataframe from dictinary')
                 for key in x.keys():

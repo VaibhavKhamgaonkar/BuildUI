@@ -1,5 +1,5 @@
 
-# -*- coding: utf-8 -*-
+
 import numpy as np, os, time, pandas as pd 
 from collections import deque 
 import dash_core_components as dcc 
@@ -9,7 +9,7 @@ import dash_html_components as html
 from dash.dependencies import Input, Output 
 #from HelperScripts.Lookup_Functions import Lookup_Functions
 #from HelperScripts.Lookup_Layout import Lookup_layout
-from Helper
+from HelperScripts.Functions import Functions
 import pickle 
 import dash_table 
 from datetime import datetime 
@@ -157,7 +157,7 @@ app.layout = html.Div([
                 #         options= 
                 #         [
                 #             {'label': 'Show Forecast', 'value': 'Yes'},
-                #         #     {'label': u'Montréal', 'value': 'MTL'},
+                #         #     {'label': u'MontrÃ©al', 'value': 'MTL'},
                 #         #     {'label': 'San Francisco', 'value': 'SF'}
                 #         ],
                 #         value= [],
@@ -173,7 +173,7 @@ app.layout = html.Div([
                 #     options= 
                 #     [
                 #         {'label': 'Show Decomposition Graphs', 'value': 'Yes'},
-                #     #     {'label': u'Montréal', 'value': 'MTL'},
+                #     #     {'label': u'MontrÃ©al', 'value': 'MTL'},
                 #     #     {'label': 'San Francisco', 'value': 'SF'}
                 #     ],
                 #     value= [''],
@@ -274,7 +274,7 @@ app.layout = html.Div([
                         options= 
                         [
                             {'label': 'Show Forecast', 'value': 'Yes'},
-                        #     {'label': u'Montréal', 'value': 'MTL'},
+                        #     {'label': u'MontrÃ©al', 'value': 'MTL'},
                         #     {'label': 'San Francisco', 'value': 'SF'}
                         ],
                         value= [],
@@ -290,7 +290,7 @@ app.layout = html.Div([
                     options= 
                     [
                         {'label': 'Show Decomposition Graphs', 'value': 'Yes'},
-                    #     {'label': u'Montréal', 'value': 'MTL'},
+                    #     {'label': u'MontrÃ©al', 'value': 'MTL'},
                     #     {'label': 'San Francisco', 'value': 'SF'}
                     ],
                     value= [''],
