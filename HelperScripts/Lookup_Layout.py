@@ -24,6 +24,11 @@ class Lookup_layout():
         self.targetColumns = [k for k,v in details.items() if v == '4']
 
 
+    '''def closeCategoryItems(self):
+        return """  ],className='two columns',style={'height':'800px','padding': 10, 'background-color':'#f7f3d0'}),  """
+    '''
+
+
     def buildToolkit(self, item):
         if item == 'importStatement' or item == 'import':
             return str(f"""
@@ -364,13 +369,103 @@ app.layout = html.Div([
             """
 
 
+        #==================== layout items ========================
+        elif item.lower() == 'firstcategory' or item.lower()=='firstdropdown':
 
+            return """
+    html.Div([
+            html.Div([
+                #html.Br(),
+                html.Label('Select the Primary attribute'),
+                
+                dcc.Dropdown(
+                    id='primaryAttribute',
+                    options= func.getColumns(),
+                    # [
+                    #     {'label': 'New York City', 'value': 'NYC'},
+                    #     {'label': u'Montréal', 'value': 'MTL'},
+                    #     {'label': 'San Francisco', 'value': 'SF'}
+                    # ],
+                    value=func.getColumns()[0]['label'],
+                    multi=False,
+                    style={
+                    'backgroundColor' :'#d4c9f0', 'fontSize':12,
+                    },
+
+
+                ),
+
+                dcc.Checklist(
+                    id='showTop5',
+                    options= 
+                    [
+                        {'label': 'Show Top 5', 'value': 'top5'},
+                    #     {'label': u'Montréal', 'value': 'MTL'},
+                    #     {'label': 'San Francisco', 'value': 'SF'}
+                    ],
+                    value= ['top5'],
+                    style = {'fontSize':12, 'color': '#2314f5'},
+                    #multi=False
+
+
+                ),
+                #html.Br(),
+            html.Label('Select Category'),
+            dcc.Dropdown(
+                id='itemsDropDown',
+                options= Functions.get2ndColumnValues(func.df,firstColumnAtribute=func.df.columns[1]),
+                    # {'label': 'New York City', 'value': 'NYC'},
+                    # {'label': u'Montréal', 'value': 'MTL'},
+                    # {'label': 'San Francisco', 'value': 'SF'},
+                    # {'label': 'San Jose', 'value': 'SJ'}
+                
+                value='',
+                multi=True,
+                placeholder="Select items...",
+                style={
+                    'backgroundColor':'#cdf6fa', 'fontSize':12,
+                },
+                ),
+
+            html.Div(id='categoryCheck',style={ 'color':'red', 'fontSize': 13,'display': 'inline-block'}),
+
+            html.Label('Select Target Attribute', style = {'color':'blue'}),
+            dcc.Dropdown(
+                id='targetAttribute',
+                options= func.getColumns(),
+                    # {'label': 'New York City', 'value': 'NYC'},
+                    # {'label': u'Montréal', 'value': 'MTL'},
+                    # {'label': 'San Francisco', 'value': 'SF'},
+                    # {'label': 'San Jose', 'value': 'SJ'}
+                
+                value=  func.getColumns()[-7]['label'],
+                multi=False,
+                placeholder="Select the Target Attribute",
+                style = {
+                    'backgroundColor': '#e2f7ab',
+
+                }
+            ),
+
+
+            """
+            
+
+
+
+        elif item.lower() == 'closecategoryitems':
+            return str("""
+              ],className='two columns',style={'height':'800px','padding': 10, 'background-color':'#f7f3d0'}),  
+              
+            """)
 
 
 
         elif item == 'closeLayout':
             return """
+    ]),
 ],style={'padding': 30},)
+
 """
 
         elif item == 'mainBlock':
@@ -399,8 +494,9 @@ if __name__ == "__main__":
     x = []
     x .append(obj.buildToolkit('import'))
     x.append(obj.buildToolkit('dataPath'))
-    x.append(obj.buildToolkit('openLayout'))
-    
+    x.append(obj.buildToolkit('openLayout')) 
+    x.append(obj.buildToolkit('firstdropdown'))
+    x.append(obj.buildToolkit('closecategoryitems'))
     x.append(obj.buildToolkit('forecast'))
     
     x.append(obj.buildToolkit('graph'))

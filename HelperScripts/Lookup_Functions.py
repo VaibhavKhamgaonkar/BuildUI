@@ -103,10 +103,10 @@ class Functions():
         elif item.lower() == 'showtoprecords' or item.lower() == 'showtop':
             return str(f""" 
     def showTopRecords(self, category, targetColumn):
-        df_grpBy = pd.DataFrame(self.df.groupby(by=category)['targetColumn'].sum())
+        df_grpBy = pd.DataFrame(self.df.groupby(by=category)[targetColumn].sum())
         df_grpBy.reset_index(drop= False, inplace=True)
-        df_grpBy.sort_values(by='targetColumn', inplace=True, ascending= False)
-        df_grpBy = df_grpBy.iloc[:10]
+        df_grpBy.sort_values(by=targetColumn, inplace=True, ascending= False)
+        df_grpBy = df_grpBy.iloc[:5]
         temp = []
         for item in df_grpBy[category]:
             temp.append(dict(label= item, value= item)) 
@@ -121,7 +121,19 @@ class Functions():
         for col in self.df.columns:
             temp.append({'label': col, 'value': col})
         return temp
-            
+
+    @staticmethod
+    def get2ndColumnValues(df, firstColumnAtribute = None):
+        temp= []
+        #print(f'firstColumnAtribute :::: {firstColumnAtribute}')
+        if firstColumnAtribute is None:
+            return [{'label' : None, 'value': None}]
+        else:
+            for col in df[firstColumnAtribute].unique():
+                temp.append({'label': col, 'value': col})
+            return temp
+
+
             """)
 
         elif item.lower() == 'getitems':

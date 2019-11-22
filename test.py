@@ -34,7 +34,86 @@ app.layout = html.Div([
             html.H3('Data Analytics UI'),
     ],style={'text-align': 'center'}),
 
- 
+
+    html.Div([
+            html.Div([
+                #html.Br(),
+                html.Label('Select the Primary attribute'),
+
+                dcc.Dropdown(
+                    id='primaryAttribute',
+                    options= func.getColumns(),
+                    # [
+                    #     {'label': 'New York City', 'value': 'NYC'},
+                    #     {'label': u'Montréal', 'value': 'MTL'},
+                    #     {'label': 'San Francisco', 'value': 'SF'}
+                    # ],
+                    value=func.getColumns()[0]['label'],
+                    multi=False,
+                    style={
+                    'backgroundColor' :'#d4c9f0', 'fontSize':12,
+                    },
+
+
+                ),
+
+                dcc.Checklist(
+                    id='showTop5',
+                    options= 
+                    [
+                        {'label': 'Show Top 5', 'value': 'top5'},
+                    #     {'label': u'Montréal', 'value': 'MTL'},
+                    #     {'label': 'San Francisco', 'value': 'SF'}
+                    ],
+                    value= ['top5'],
+                    style = {'fontSize':12, 'color': '#2314f5'},
+                    #multi=False
+
+
+                ),
+                #html.Br(),
+            html.Label('Select Category'),
+            dcc.Dropdown(
+                id='itemsDropDown',
+                options= Functions.get2ndColumnValues(func.df,firstColumnAtribute=func.df.columns[1]),
+                    # {'label': 'New York City', 'value': 'NYC'},
+                    # {'label': u'Montréal', 'value': 'MTL'},
+                    # {'label': 'San Francisco', 'value': 'SF'},
+                    # {'label': 'San Jose', 'value': 'SJ'}
+
+                value='',
+                multi=True,
+                placeholder="Select items...",
+                style={
+                    'backgroundColor':'#cdf6fa', 'fontSize':12,
+                },
+                ),
+
+            html.Div(id='categoryCheck',style={ 'color':'red', 'fontSize': 13,'display': 'inline-block'}),
+
+            html.Label('Select Target Attribute', style = {'color':'blue'}),
+            dcc.Dropdown(
+                id='targetAttribute',
+                options= func.getColumns(),
+                    # {'label': 'New York City', 'value': 'NYC'},
+                    # {'label': u'Montréal', 'value': 'MTL'},
+                    # {'label': 'San Francisco', 'value': 'SF'},
+                    # {'label': 'San Jose', 'value': 'SJ'}
+
+                value=  func.getColumns()[-7]['label'],
+                multi=False,
+                placeholder="Select the Target Attribute",
+                style = {
+                    'backgroundColor': '#e2f7ab',
+
+                }
+            ),
+
+
+            
+              ],className='two columns',style={'height':'800px','padding': 10, 'background-color':'#f7f3d0'}),  
+
+             
     #=============Forecasting Area ======================================
             html.Div([
                 html.Div(html.H6('Forecast Paramters',style={'text-align': 'center', 'color':'#b00471'})),
@@ -323,7 +402,9 @@ app.layout = html.Div([
             ),
 
             
+    ]),
 ],style={'padding': 30},)
+
 
 app.css.append_css({"external_url": [
     "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
