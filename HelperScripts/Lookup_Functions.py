@@ -106,7 +106,7 @@ class Functions():
         df_grpBy = pd.DataFrame(self.df.groupby(by=category)[targetColumn].sum())
         df_grpBy.reset_index(drop= False, inplace=True)
         df_grpBy.sort_values(by=targetColumn, inplace=True, ascending= False)
-        df_grpBy = df_grpBy.iloc[:5]
+        df_grpBy = df_grpBy.iloc[:25]
         temp = []
         for item in df_grpBy[category]:
             temp.append(dict(label= item, value= item)) 
@@ -119,7 +119,7 @@ class Functions():
     def getColumns(self):
         temp = []
         for col in self.df.columns:
-            temp.append({'label': col, 'value': col})
+            temp.append({'label': str(col), 'value': str(col)})
         return temp
 
     @staticmethod
@@ -130,7 +130,7 @@ class Functions():
             return [{'label' : None, 'value': None}]
         else:
             for col in df[firstColumnAtribute].unique():
-                temp.append({'label': col, 'value': col})
+                temp.append({'label': str(col), 'value': str(col)})
             return temp
 
 
@@ -144,7 +144,7 @@ class Functions():
             data = self.df
 
         for col in data[category].unique():
-            temp.append(dict(label= col, value= col))
+            temp.append(dict(label= str(col), value= str(col)))
         return temp
            
             """)

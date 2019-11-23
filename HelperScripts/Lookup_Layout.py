@@ -24,9 +24,41 @@ class Lookup_layout():
         self.targetColumns = [k for k,v in details.items() if v == '4']
 
 
-    '''def closeCategoryItems(self):
-        return """  ],className='two columns',style={'height':'800px','padding': 10, 'background-color':'#f7f3d0'}),  """
-    '''
+    def buildTargetForecasting(self):
+        x = []
+        for item in self.targetColumns:
+            x.append({'label': item, 'value': item},)
+        
+        return x
+
+            # [
+            #                 {'label': 'Quantity', 'value': 'qty'},
+            #                 {'label': 'Amount', 'value': 'amt'},
+            #                 ],
+
+
+    def creatParamters(self, number, paramterList):
+        for i in range(number):
+            if len(paramterList)>1:
+                paramterList += ', ' + 'category_' + str(i)
+            else:
+                paramterList += 'category_' + str(i)
+        return paramterList
+
+
+    def createDropDown(self, categoryValue):
+        id = categoryValue.replace(' ', '')
+        return f""" dcc.Dropdown(
+                id='{id}',
+                options= func.getItems(category = '{categoryValue}'),
+                value= None, 
+                multi=False, """ + f"""
+                placeholder = 'Select {categoryValue}', """ + """
+                style={'fontSize':12,},
+            ),
+            """
+
+
 
 
     def buildToolkit(self, item):
@@ -75,7 +107,57 @@ app.layout = html.Div([
 
 """
         elif item.lower()=='forecast' or item.lower() == 'forecastlayout':
-            return """ 
+            x =  self.buildTargetForecasting()
+            print(x)
+            print(x[0]['value'])
+            
+            temp = """
+            html.Div(
+                    [html.Label('Forecast for : ', style = {'display': 'inline-block', 'verticalAlign' : "middle", }),
+                    dcc.RadioItems(
+                        id='qtyOrAmt',""" + f"""
+                        options = {x},
+                        value= '{x[0]['value']}',   """ + """
+                        style = {'display': 'inline-block', 'width':'50%', 'color':'#b51f9c','verticalAlign' : "middle", }
+
+                    ),
+                    ],
+                   style={'display': 'inline-block', 'width':'20%', 'fontSize':13, }, 
+                ),
+                """
+
+            temp += """ 
+    
+                html.Div(
+                    dcc.Checklist(
+                        id='showForcast',
+                        options= [
+                        
+                            {'label': 'Show Forecast', 'value': 'Yes'},
+                        ],
+                        value= [],
+                        labelStyle={'color': '#0004ed', 'width':'100%', 'fontSize':15,}
+                        #multi=False
+                    ),
+                style={ "margin-left": 0,  'color': '#603c73', 'fontSize':15,'display': 'inline-block'},
+                ),
+
+                html.Div(
+                    dcc.Checklist(
+                    id='showDecompositionGraph',
+                    options= [
+                    
+                        {'label': 'Show Decomposition Graphs', 'value': 'Yes'},
+                   
+                    ],
+                    value= [''],
+                    #multi=False
+                    ),
+                    style={ "margin-left": 5,  'color': '#4a2775', 'fontSize':15,'display': 'inline-block'},
+                ),
+
+                ],className='two columns',style={'width':'1000px','padding': 5, 'background-color':'#f2efed'}), """
+            x = '''
     #=============Forecasting Area ======================================
             html.Div([
                 html.Div(html.H6('Forecast Paramters',style={'text-align': 'center', 'color':'#b00471'})),
@@ -103,19 +185,7 @@ app.layout = html.Div([
                     style={ 'width':'80%', 'color': '#603c73', 'verticalAlign' : "middle", 'fontSize':13, },
 
                 ),
-                # html.Div(
-                #     [
-
-                    
-
-
-                #     ],
-                #     style={ 'width':'20%', 'color': '#603c73', 'fontSize':13,},
-
-                # ),
-
-
-
+                
                 html.Div(
                     children=[
                         html.Label('Select Country Holidays',),
@@ -192,37 +262,6 @@ app.layout = html.Div([
                     
                 ),
 
-                # html.Div(
-                #     dcc.Checklist(
-                #         id='showForcast',
-                #         options= 
-                #         [
-                #             {'label': 'Show Forecast', 'value': 'Yes'},
-                #         #     {'label': u'Montréal', 'value': 'MTL'},
-                #         #     {'label': 'San Francisco', 'value': 'SF'}
-                #         ],
-                #         value= [],
-                #         labelStyle={'color': '#0004ed', 'width':'100%', 'fontSize':15,}
-                #         #multi=False
-                #     ),
-                # style={ "margin-left": 0,  'color': '#603c73', 'fontSize':15,'display': 'inline-block'},
-                # ),
-
-                # html.Div(
-                #     dcc.Checklist(
-                #     id='showDecompositionGraph',
-                #     options= 
-                #     [
-                #         {'label': 'Show Decomposition Graphs', 'value': 'Yes'},
-                #     #     {'label': u'Montréal', 'value': 'MTL'},
-                #     #     {'label': 'San Francisco', 'value': 'SF'}
-                #     ],
-                #     value= [''],
-                #     #multi=False
-                #     ),
-                #     style={ "margin-left": 5,  'color': '#4a2775', 'fontSize':15,'display': 'inline-block'},
-                # ),
-
                 html.Div(html.H5('Confidense Interval',style={'color': '#6e0066', 'fontSize':15,'display': 'inline-block'})),
                 #html.Div(id='output-container-confidense-slider',style={'display': 'inline-block'}),
                 html.Div(dcc.Slider(
@@ -292,61 +331,11 @@ app.layout = html.Div([
                         style={'display': 'inline-block', 'width':'30%', 'fontSize':13, },
                 ),
 
-                html.Div(
-                    [html.Label('Forecast for : ', style = {'display': 'inline-block', 'verticalAlign' : "middle", }),
-                    dcc.RadioItems(
-                        id='qtyOrAmt',
-                        options= [
-                            {'label': 'Quantity', 'value': 'qty'},
-                            {'label': 'Amount', 'value': 'amt'},
-                            ],
-                        value='qty',
-                        style = {'display': 'inline-block', 'width':'50%', 'color':'#b51f9c','verticalAlign' : "middle", }
-
-                    ),
-                    ],
-                   style={'display': 'inline-block', 'width':'20%', 'fontSize':13, }, 
-                ),
-
-                
-                html.Div(
-                    dcc.Checklist(
-                        id='showForcast',
-                        options= 
-                        [
-                            {'label': 'Show Forecast', 'value': 'Yes'},
-                        #     {'label': u'Montréal', 'value': 'MTL'},
-                        #     {'label': 'San Francisco', 'value': 'SF'}
-                        ],
-                        value= [],
-                        labelStyle={'color': '#0004ed', 'width':'100%', 'fontSize':15,}
-                        #multi=False
-                    ),
-                style={ "margin-left": 0,  'color': '#603c73', 'fontSize':15,'display': 'inline-block'},
-                ),
-
-                html.Div(
-                    dcc.Checklist(
-                    id='showDecompositionGraph',
-                    options= 
-                    [
-                        {'label': 'Show Decomposition Graphs', 'value': 'Yes'},
-                    #     {'label': u'Montréal', 'value': 'MTL'},
-                    #     {'label': 'San Francisco', 'value': 'SF'}
-                    ],
-                    value= [''],
-                    #multi=False
-                    ),
-                    style={ "margin-left": 5,  'color': '#4a2775', 'fontSize':15,'display': 'inline-block'},
-                ),
-
-
-                #html.Br(),
-
-
-            ],className='two columns',style={'width':'1000px','padding': 5, 'background-color':'#f2efed'}), 
-
-            """
+                '''
+            
+            
+            
+            return x + temp
 
         elif item.lower() == 'graph':
             return """
@@ -396,14 +385,14 @@ app.layout = html.Div([
                 ),
 
                 dcc.Checklist(
-                    id='showTop5',
+                    id='showTop25',
                     options= 
                     [
-                        {'label': 'Show Top 5', 'value': 'top5'},
+                        {'label': 'Show Top 25', 'value': 'top25'},
                     #     {'label': u'Montréal', 'value': 'MTL'},
                     #     {'label': 'San Francisco', 'value': 'SF'}
                     ],
-                    value= ['top5'],
+                    value= ['top25'],
                     style = {'fontSize':12, 'color': '#2314f5'},
                     #multi=False
 
@@ -436,9 +425,10 @@ app.layout = html.Div([
                     # {'label': 'New York City', 'value': 'NYC'},
                     # {'label': u'Montréal', 'value': 'MTL'},
                     # {'label': 'San Francisco', 'value': 'SF'},
-                    # {'label': 'San Jose', 'value': 'SJ'}
+                    # {'label': 'San Jose', 'value': 'SJ'} """ + f"""
                 
-                value=  func.getColumns()[-7]['label'],
+                value=  '{self.dateColumn[0]}' ,#func.getColumns()[-7]['label'], 
+                """ + """
                 multi=False,
                 placeholder="Select the Target Attribute",
                 style = {
@@ -449,7 +439,38 @@ app.layout = html.Div([
 
 
             """
-            
+        
+
+        elif item.lower() == 'categories': 
+            #categories = self.creatParamters(self.noOfCatColumns,'').split(',')
+            temp = """html.Br(),
+            html.Label('Select Filtering Components',style = {'color': '#9e16a1', 'fontSize':15,}), 
+            dcc.Checklist(
+                    id='showOnlyAvailableDataPoints',
+                    options= 
+                    [
+                        {'label': 'Show Only Available Data', 'value': 'yes'},
+                    #     {'label': u'Montréal', 'value': 'MTL'},
+                    #     {'label': 'San Francisco', 'value': 'SF'}
+                    ],
+                    value= ['yes'],
+                    style = {'fontSize':11, 'color': '#2314f5'},
+                    #multi=False
+
+
+                ),
+                """
+
+            for cat in self.categories:
+                temp += self.createDropDown(categoryValue=cat)
+
+            return temp
+                
+
+
+
+
+
 
 
 
@@ -468,8 +489,13 @@ app.layout = html.Div([
 
 """
 
-        elif item == 'mainBlock':
+        elif item == 'endMainBlock':
             return """
+
+
+
+
+
 app.css.append_css({"external_url": [
     "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
 ]})
@@ -478,7 +504,49 @@ if __name__ == '__main__':
     app.run_server(debug=True)
 """
 
-        #elif item == 
+
+    #==============================Callback function creation =====================
+
+    def callBacks(self,):
+        return """ 
+#-----------------------------Implimenting callbacks Function ----------------------
+@app.callback(Output('itemsDropDown', 'options'), [Input('primaryAttribute', "value"), Input('showTop25', "value"), Input('qtyOrAmt', "value")])
+def updateList(value,checkbox, qtyOrAmt):
+    print(value,checkbox, qtyOrAmt)
+    if value is None :
+        return [{'label' : '', 'value': ''}]
+        
+    else:
+        if checkbox is None:
+            return Functions.get2ndColumnValues(df=func.df,firstColumnAtribute=value)
+        
+        if len(checkbox) < 1:
+            return Functions.get2ndColumnValues(df=func.df,firstColumnAtribute=value)
+        else:
+            return func.showTopRecords(category = value, targetColumn = qtyOrAmt )
+
+
+@app.callback(Output('categoryCheck', 'children'), [Input('showForcast', "value"), Input('itemsDropDown', 'value'),])
+def updateCheckCategory(showForcast,items):
+    #print('we are waiting', showForcast )
+    if 'Yes' in showForcast:
+        if len(items)>1:
+            #print('only 1 is required')
+            return str("ALERT!! - Please Select only one Category when Show Forecast is selected.")
+
+        """
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -494,14 +562,19 @@ if __name__ == "__main__":
     x = []
     x .append(obj.buildToolkit('import'))
     x.append(obj.buildToolkit('dataPath'))
-    x.append(obj.buildToolkit('openLayout')) 
+    x.append(obj.buildToolkit('openLayout'))  
     x.append(obj.buildToolkit('firstdropdown'))
+    x.append(obj.buildToolkit('categories'))
     x.append(obj.buildToolkit('closecategoryitems'))
     x.append(obj.buildToolkit('forecast'))
     
     x.append(obj.buildToolkit('graph'))
     x.append(obj.buildToolkit('closeLayout'))
-    x.append(obj.buildToolkit('mainBlock'))
+    
+
+    x.append(obj.callBacks())
+
+    x.append(obj.buildToolkit('endMainBlock'))
 
     with open('./test.py','w',encoding="utf-8") as f:
         f.writelines(x)
