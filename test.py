@@ -39,7 +39,7 @@ app.layout = html.Div([
             html.Div([
                 #html.Br(),
                 html.Label('Select the Primary attribute'),
-
+                
                 dcc.Dropdown(
                     id='primaryAttribute',
                     options= func.getColumns(),
@@ -80,7 +80,7 @@ app.layout = html.Div([
                     # {'label': u'Montréal', 'value': 'MTL'},
                     # {'label': 'San Francisco', 'value': 'SF'},
                     # {'label': 'San Jose', 'value': 'SJ'}
-
+                
                 value='',
                 multi=True,
                 placeholder="Select items...",
@@ -99,7 +99,7 @@ app.layout = html.Div([
                     # {'label': u'Montréal', 'value': 'MTL'},
                     # {'label': 'San Francisco', 'value': 'SF'},
                     # {'label': 'San Jose', 'value': 'SJ'} 
-
+                
                 value=  'InvoiceDate' ,#func.getColumns()[-7]['label'], 
                 
                 multi=False,
@@ -161,12 +161,12 @@ app.layout = html.Div([
             ),
             
               ],className='two columns',style={'height':'800px','padding': 10, 'background-color':'#f7f3d0'}),  
-
+              
             
     #=============Forecasting Area ======================================
             html.Div([
                 html.Div(html.H6('Forecast Paramters',style={'text-align': 'center', 'color':'#b00471'})),
-
+                
                 html.Div(
                     [
                     html.Label('Select the Data Aggregating value ', style={'width':'15%','verticalAlign' : "middle", 'display': 'inline-block'}),
@@ -190,11 +190,11 @@ app.layout = html.Div([
                     style={ 'width':'80%', 'color': '#603c73', 'verticalAlign' : "middle", 'fontSize':13, },
 
                 ),
-
+                
                 html.Div(
                     children=[
                         html.Label('Select Country Holidays',),
-
+            
                         dcc.Dropdown(
                             id='holiday',
                             options= 
@@ -211,7 +211,7 @@ app.layout = html.Div([
                                 {'label': 'Pakistan   ', 'value': 'PK'},
                                 {'label': 'Bangladesh    ', 'value': 'BD'},
                                 {'label': 'Indonesia     ', 'value': 'ID'}],
-
+                            
                             value= 'US', #func.getDateRange()[0]['label'],
                             multi=False,
                             placeholder='Include Holidays',
@@ -224,14 +224,14 @@ app.layout = html.Div([
                 html.Div(
                     children = [
                         html.Label('Select the Seasonality Method'),
-
+                        
                         dcc.Dropdown(
                         id='seasonality',
                         options= 
                             [{'label': 'Multiplicative', 'value': 'multiplicative'},
                             {'label': 'Additive', 'value': 'additive'},
                             ],
-
+                        
                         value= 'multiplicative', #func.getDateRange()[0]['label'],
                         multi=False,
                         placeholder='Select Seasonality Factor',
@@ -240,12 +240,12 @@ app.layout = html.Div([
                     ],
                     style={ "margin-left": 0, 'width':'15%', 'color': '#603c73', 'fontSize':13,'display': 'inline-block'},
                 ),
-
+                
 
                 html.Div(
                     children = [ 
                         html.Label('Include Seasonality',),
-
+                        
                         dcc.Dropdown(
                         id='checkSeasonality',
                         options= 
@@ -253,9 +253,9 @@ app.layout = html.Div([
                             {'label': 'Monthly', 'value': 'M'},
                             {'label': 'Yearly', 'value': 'Y'},
                             {'label': 'Daily', 'value': 'D'},
-
+                            
                             ],
-
+                        
                         value= 'W', #func.getDateRange()[0]['label'],
                         multi=False,
                         placeholder='Add Seasonality Factor',
@@ -264,7 +264,7 @@ app.layout = html.Div([
                     ],
                     style={ "margin-left": 5,'width':'20%', 'color': '#603c73', 'fontSize':12,'display': 'inline-block'},
                     #style={ "margin-left": 5, 'align':'right','width':'100%',},
-
+                    
                 ),
 
                 html.Div(html.H5('Confidense Interval',style={'color': '#6e0066', 'fontSize':15,'display': 'inline-block'})),
@@ -284,7 +284,7 @@ app.layout = html.Div([
                                 100: {'label': '100%', 'style': {'color': '#f5498e'}}
                             },
                             tooltip= {'always_visible': False, 'placement':'top',},
-
+                            
                         ),
                         style={'width': '65%', 'display': 'inline-block'},
                         ),
@@ -350,12 +350,12 @@ app.layout = html.Div([
                    style={'display': 'inline-block', 'width':'20%', 'fontSize':13, }, 
                 ),
                  
-
+    
                 html.Div(
                     dcc.Checklist(
                         id='showForcast',
                         options= [
-
+                        
                             {'label': 'Show Forecast', 'value': 'Yes'},
                         ],
                         value= [],
@@ -369,9 +369,9 @@ app.layout = html.Div([
                     dcc.Checklist(
                     id='showDecompositionGraph',
                     options= [
-
+                    
                         {'label': 'Show Decomposition Graphs', 'value': 'Yes'},
-
+                   
                     ],
                     value= [''],
                     #multi=False
@@ -385,10 +385,10 @@ app.layout = html.Div([
             html.Div(
                     dcc.Graph(id='parameterGraph',
                     style = {'bgcolor': '#fcfcd4', 'paper_bgcolor': '#f7f2f7'}
-
+                    
                     ),className='ten columns',style={'padding-top': 5,}
             ), 
-
+            
             html.Div(
                     dcc.Graph(id='subParameterGraph',
                     style = {'bgcolor': '#fcfcd4', 'paper_bgcolor': '#f7f2f7'},
@@ -407,11 +407,11 @@ def updateList(value,checkbox, qtyOrAmt):
     print(value,checkbox, qtyOrAmt)
     if value is None :
         return [{'label' : '', 'value': ''}]
-
+        
     else:
         if checkbox is None:
             return Functions.get2ndColumnValues(df=func.df,firstColumnAtribute=value)
-
+        
         if len(checkbox) < 1:
             return Functions.get2ndColumnValues(df=func.df,firstColumnAtribute=value)
         else:
@@ -425,6 +425,369 @@ def updateCheckCategory(showForcast,items):
         if len(items)>1:
             #print('only 1 is required')
             return str("ALERT!! - Please Select only one Category when Show Forecast is selected.")
+
+
+''' Clear the Show Forecast flag if target is not calendar day'''
+@app.callback(Output('showForcast', 'value'), 
+    [
+    #Input('showDecompositionGraph', "value"),
+    #Input('showForcast', "value"),
+    Input('targetAttribute', "value"),
+    ])
+def ClearShowForecastFlag(targetAttribute):
+    return ['']
+
+
+#for clearing decomposition Graph graph on different attribute selection
+@app.callback(Output('showDecompositionGraph', 'value'), 
+    [
+    #Input('showDecompositionGraph', "value"),
+    Input('showForcast', "value"),
+    Input('holiday', "value"),
+    Input('seasonality', "value"),
+    Input('checkSeasonality', "value"),
+    Input('inlineWidth', "value"),
+    Input('itemsDropDown', "value"),
+    Input('forecastSlider', "value"),
+    Input('aggregateUsing', "value"),
+    Input('selectGraph', "value"), 
+    Input('Invoice', "value"),Input('StockCode', "value"),Input('CustomerID', "value"),Input('Country', "value"),
+    
+    ])   
+def updateDecompositionState(forecastFlag,holiday,seasonality,checkSeasonality,inlineWidth,itemsDropDown,forecastSlider,
+                             aggrUsing, graphType , category_0, category_1, category_2, category_3  ):
+    
+    return ['']
+
+
+
+#------ For displaying the Graph based on paramters selection---
+
+@app.callback(Output('parameterGraph', 'figure'), 
+    [Input('primaryAttribute', "value"),
+    Input('itemsDropDown', "value"),
+    
+    
+    Input('targetAttribute', "value"),
+   
+    Input('aggregateUsing', "value"),
+    Input('selectGraph', "value"),
+    Input('showForcast', "value"),
+    Input('forecastSlider', "value"),
+    Input('holiday', "value"),
+    Input('seasonality', "value"),
+    Input('checkSeasonality', "value"),
+    Input('inlineWidth', "value"), 
+    Input('Invoice', "value"),Input('StockCode', "value"),Input('CustomerID', "value"),Input('Country', "value"),
+    
+    Input('qtyOrAmt', "value"),
+
+    ])
+def update_graph(primary, items, targetAttribute,  aggrUsing, graphType,
+                showForcast,forecastSlider,holiday,seasonality,checkSeasonality,inlineWidth , category_0, category_1, category_2, category_3 , qtyOrAmt):
+    traces = []
+    COLORS = np.random.randint(0,255, size=(len(items), 1, 3), dtype= 'uint8') 
+
+    if len(['Quantity', 'Price']) > 1:
+        if qtyOrAmt == 'Quantity':
+            forecastColumn = 'Quantity'
+        else:
+            forecastColumn = 'Price'
+    else:
+        forecastColumn = 'Quantity'
+
+    if items is None or  primary is None : 
+        
+        return {'data': traces,
+        'layout': go.Layout(
+            #xaxis={'title': 'xyz'},
+            #yaxis={'title': 'secDD', },
+            #margin={'l': 40, 'b': 40, 't': 10, 'r': 10},
+            #legend={'x': 0, 'y': 1},
+            hovermode='closest'
+            )
+            }
+    if 'Yes' in showForcast :
+        if len(items)!=1:
+            return {'data': traces,
+                'layout': go.Layout(
+            #xaxis={'title': 'xyz'},
+            #yaxis={'title': 'secDD', },
+            #margin={'l': 40, 'b': 40, 't': 10, 'r': 10},
+            #legend={'x': 0, 'y': 1},
+            hovermode='closest'
+            )
+            } 
+        if graphType != 'line':
+            return {'data': traces,
+                    'layout': go.Layout(
+                #xaxis={'title': 'xyz'},
+                #yaxis={'title': 'secDD', },
+                #margin={'l': 40, 'b': 40, 't': 10, 'r': 10},
+                #legend={'x': 0, 'y': 1},
+                hovermode='closest'
+                )
+                } 
+        
+        data, df_grp =  func.forecast(primary, items, targetAttribute,aggrUsing, holiday, seasonality, inlineWidth, checkSeasonality, forecastSlider, category_0, category_1, category_2, category_3, forecastColumn )
+        
+        
+
+        if data is None and df_grp is None:
+            print('Exiting...')
+            return {'data': [],
+            'layout': go.Layout(
+            #xaxis={'title': 'xyz'},
+            #yaxis={'title': 'secDD', },
+            #margin={'l': 40, 'b': 40, 't': 10, 'r': 10},
+            #legend={'x': 0, 'y': 1},
+            hovermode='closest'
+            )
+            }
+    else:
+        data = func.getData(primary,items, aggrUsing, targetAttribute, category_0, category_1, category_2, category_3, forecastColumn )
+
+        # data = func.getData(primary,items,country, date, aggrUsing, targetAttribute,
+        #                     companyCode, purchasingGrp, profitCenter, CostCenter, superCommodity, 
+        #                     primaryCommodity, vendorDesc, glAccount, materialGroup, forecastColumn)
+
+        
+        
+    row,col, specs = Functions.getRowCol(len(data))
+    i,j = 1,1
+
+    if len(items) != 0:
+        #print(f'ENTERED:::{specs}, {row,col}')
+        fig = make_subplots(rows=row , cols=col, specs=specs, subplot_titles=items)
+    else:
+        #print(f'ELSE ---- ENTERED:::{specs}, {row,col}')
+        fig = make_subplots(rows=1 , cols=1, specs=[[{'type':'domain'}]],)
+
+
+    for color, df,item in zip(COLORS,data,items):
+        if targetAttribute != 'Calendar Day':
+            print(f'targetAttribute{targetAttribute}...######')
+            if graphType == 'scatter':
+                traces.append(go.Scatter(
+                        x=df[targetAttribute],
+                        y=df[forecastColumn],
+                        #text=df[item + '_In-Percentage'],
+                        mode='markers',
+                        opacity=0.7,
+                        marker={
+                            'size': 15,
+                            'line': {'width': 0.5, 'color': 'white'}
+                        },
+                        name= item
+
+                    )
+                    )
+                    
+            elif graphType == 'line':
+                traces.append(go.Scatter(
+                        x=df[targetAttribute],
+                        y=df[forecastColumn],
+                        #text=df[item + '_In-Percentage'],
+                        mode='lines+markers',
+                        opacity=0.7,
+                        marker={
+                            'size': 15,
+                            'line': {'width': 0.5, 'color': 'white'}
+                        },
+                        name= item
+
+                    )
+                    )
+            elif graphType == 'bar':
+                traces.append(go.Bar(
+                        x=df[targetAttribute],
+                        y=df[forecastColumn],
+                        #text=df[str(item) + '_In-Percentage'],
+                        #mode='markers',
+                        opacity=0.7,
+                            # marker={
+                            #     'size': 15,
+                            #     'line': {'width': 0.5, 'color': 'white'}
+                            # },
+                        name= item , 
+                    )
+                    )
+            elif graphType == 'pie':
+                if i <= row: #2
+                    if j <= col: #3
+                        fig.add_trace(go.Pie(
+                                labels=df[targetAttribute],
+                                values =df[forecastColumn],
+                                #text= None, #df[str(item) + '_In-Percentage'],
+                                #mode='markers',
+                                opacity=0.7,
+                                textinfo='none',
+                                #textinfo='', 
+                                #annotations= False,
+                                    # marker={
+                                    #     'size': 15,
+                                    #     'line': {'width': 0.5, 'color': 'white'}
+                                    # },
+                                name= item,
+                            
+                            ), i, j,)
+                        j+=1
+                    else:
+                        i+=1
+                        j=1
+        
+        else:
+            print('Ploting for target Attribute : Calender Date')
+            if graphType == 'scatter':
+                traces.append(go.Scatter(x=df[targetAttribute],
+                            y=df[forecastColumn],
+                            #text=df_grp,
+                            mode='markers',
+                            marker_color='rgba(' + str(color[0][0]+50) + ',' + str(color[0][1]+70) + ',' + str(color[0][2]+80) + str(0.5) + ')',
+                            opacity=0.7,
+                            
+                            marker={
+                                    'size': [item if item > 0 else 0.5 for item in 100 * df[forecastColumn]//np.max(df[forecastColumn])],
+                                    'line': {'width': 0.5, 'color': 'white'},
+                                    #'color': np.random.randn(25),
+                                    #'colorscale':'plotly3',
+                                    #'showscale':True
+                                    
+                                },
+                            name = item,
+                        
+                        )
+                        )
+
+            elif graphType == 'bar':
+                traces.append(go.Bar(x=df[targetAttribute],
+                            y=df[forecastColumn],
+                            #text=df_grp,
+                            #mode='lines+markers',
+                            #marker_color='rgba(' + str(color[0][0]+50) + ',' + str(color[0][1]+70) + ',' + str(color[0][2]+80) + str(0.5) + ')',
+                            opacity=0.7,
+                            
+                            # marker={
+                            #         'size': [item if item > 0 else 0.5 for item in 100 * df['Invoice Amount (Translated)']//np.max(df['Invoice Amount (Translated)'])],
+                            #         'line': {'width': 0.5, 'color': 'white'},
+                            #         #'color': np.random.randn(25),
+                            #         #'colorscale':'plotly3',
+                            #         #'showscale':True
+                                    
+                            #     },
+                            name = item,
+                        
+                        )
+                        )
+
+            elif graphType == 'line':
+                if 'Yes' in showForcast and items is not None:
+                    return func.getGraph(data,df_grp, items,forecastSlider)    
+                    #traces.append(fig)
+
+                else:
+                    traces.append(go.Scatter(x=df[targetAttribute],
+                            y=df[forecastColumn],
+                            #text=df_grp,
+                            mode='lines+markers',
+                            #marker_color='rgba(' + str(color[0][0]+50) + ',' + str(color[0][1]+70) + ',' + str(color[0][2]+80) + str(0.5) + ')',
+                            opacity=0.7,
+                            
+                            marker={
+                                    'size':10,
+                                    #'size': [item if item > 0 else 0.5 for item in 100 * df['Invoice Amount (Translated)']//np.max(df['Invoice Amount (Translated)'])],
+                                    #'line': {'width': 0.5, 'color': 'white'},
+                                    #'color': np.random.randn(25),
+                                    #'colorscale':'plotly3',
+                                    #'showscale':True
+                                    
+                                },
+                            name = item,
+                        
+                        )
+                        )
+
+            elif graphType == 'pie':
+                if i <= row: #2
+                    if j <= col: #3
+                        fig.add_trace(go.Pie(
+                                labels=df[targetAttribute],
+                                values =df[forecastColumn],
+                                #text=df[str(item) + '_In-Percentage'],
+                                #mode='markers',
+                                textinfo='none',
+                                opacity=0.7, 
+                                
+                                    # marker={
+                                    #     'size': 15,
+                                    #     'line': {'width': 0.5, 'color': 'white'}
+                                    # },
+                                name= item,
+                            
+                            ), i, j,)
+                        j+=1
+                    else:
+                        i+=1
+                        j=1
+
+
+    if graphType == 'pie':
+        return go.Figure(fig, )
+
+    else:
+        return {'data': traces,
+            'layout': go.Layout(
+                xaxis={'title': str(targetAttribute), 'color': 'black'},
+                yaxis={'title':  str(primary) + ' Expenses', 'color':'blue'},
+                #margin={'l': 40, 'b': 40, 't': 10, 'r': 10},
+                #legend={'x': 0, 'y': 1},
+                title = {"text": str(primary) + ' VS ' + str(targetAttribute) ,
+                    "font": {"family": 'Comic Sans MS',
+                                "size": 20,
+                                "color": '#e811f0'}
+                    },
+                plot_bgcolor = '#fcfcd4',
+                paper_bgcolor =  '#f7f2f7', #'#d7dadb',
+                hovermode='closest',
+                #textinfo='none',
+                #layout_showlegend=False
+            )
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         
 

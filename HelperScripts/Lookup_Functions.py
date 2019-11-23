@@ -74,8 +74,8 @@ class Functions():
     ''' 
     Contains various Functions
     '''
-    def __init__(self, dataFilePath = '{self.dataFilePath}', dataFileType = '{self.dataFileType}'):
-        
+    def __init__(self, dataFilePath = '{self.dataFilePath}', dataFileType = '{self.dataFileType}'): """ + 
+    """ 
         if dataFileType.lower() in ['pkl','pickle','cpickle']:
             with open(dataFilePath,'rb') as f: #MergedData_15_OCT.pkl
                 #pickle.dump(data,f)
@@ -97,6 +97,32 @@ class Functions():
         self.value = None
         self.forecastData = ''
         self.df_grpData = ''
+        
+    @staticmethod
+    def getRowCol(x):
+        if x == 1:
+            row,col = 1,1
+            specs = [[ {'type':'domain'} for i in range(1)]]
+        elif x == 2:
+            row,col = 1,2
+            
+            specs = [[ {'type':'domain'} for i in range(2)]]
+        elif x == 3:
+            row,col = 1,3
+            
+            specs = [[{'type':'domain'} for i in range(3)]]
+        elif x == 4:
+            row,col = 2,2
+            specs = [[ {'type':'domain'} for i in range(2)] for i in range(2)]
+            
+        else:
+            col = 3
+            row = int(np.ceil(x/col))
+            specs = [[ {'type':'domain'} for i in range(col)] for i in range(row)]
+
+        return row, col, specs
+
+
             
             """)
 
@@ -345,7 +371,7 @@ class Functions():
 
         {self.creatParamters(self.noOfCatColumns, param)})
         if len(parameters)==1: 
-            if targetCol == 'Calendar Day':
+            if targetCol == '{self.dateColumn[0]}':
                 tempdf = df[df[primaryCol] == parameters[0]]
                 df_grp = pd.DataFrame(tempdf.groupby(by=[targetCol])[forecastColumn].sum())
                 ''' making the Time series Data Consistense '''
@@ -369,7 +395,7 @@ class Functions():
                 return finalDf
         else:
             for parameter in parameters:
-                if targetCol != 'Calendar Day':
+                if targetCol != '{self.dateColumn[0]}':
                     temp = df[df[primaryCol]==parameter][[targetCol, forecastColumn ]].groupby(targetCol).sum().reset_index()
                     x = pd.DataFrame(df[df[primaryCol]==parameter][targetCol].value_counts()).reset_index()
                     x['Percent'] = x[targetCol].apply(lambda a : a*100 /len(df[df[primaryCol]==parameter]))
