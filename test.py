@@ -565,8 +565,8 @@ def update_graph(primary, items, targetAttribute,  aggrUsing, graphType,
 
 
     for color, df,item in zip(COLORS,data,items):
-        if targetAttribute != 'Calendar Day':
-            print(f'targetAttribute{targetAttribute}...######')
+        if targetAttribute != 'InvoiceDate': 
+            print(f'targetAttribute {targetAttribute}...######')
             if graphType == 'scatter':
                 traces.append(go.Scatter(
                         x=df[targetAttribute],

@@ -679,11 +679,11 @@ def ClearShowForecastFlag(targetAttribute):
     else:
         #print(f'ELSE ---- ENTERED:::{specs}, {row,col}')
         fig = make_subplots(rows=1 , cols=1, specs=[[{'type':'domain'}]],)
-
+""" + f"""
 
     for color, df,item in zip(COLORS,data,items):
-        if targetAttribute != 'Calendar Day':
-            print(f'targetAttribute{targetAttribute}...######')
+        if targetAttribute != '{self.dateColumn[0]}': """ + """
+            print(f'targetAttribute {targetAttribute}...######')
             if graphType == 'scatter':
                 traces.append(go.Scatter(
                         x=df[targetAttribute],

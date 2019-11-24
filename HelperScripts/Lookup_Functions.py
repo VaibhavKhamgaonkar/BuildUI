@@ -92,7 +92,7 @@ class Functions():
                 for key in x.keys():
                     self.df = pd.concat([self.df,x[key]],axis=0)
                 self.df.reset_index(inplace=True, drop=True)
-
+        
         print(self.df.shape)
         self.value = None
         self.forecastData = ''
