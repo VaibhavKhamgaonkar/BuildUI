@@ -755,6 +755,211 @@ def update_graph(primary, items, targetAttribute,  aggrUsing, graphType,
         }
 
 
+#for decomposition Graph:------------
+
+@app.callback(Output('subParameterGraph', 'figure'), 
+    [Input('showDecompositionGraph', "value"),
+    Input('showForcast', "value"),
+    Input('holiday', "value"),
+    #Input('seasonality', "value"),
+    Input('checkSeasonality', "value"),
+    ])
+def updateSubparameterGraph(showDecompositionGraphFlag,forecast, holiday, checkSeasonality):
+
+    if showDecompositionGraphFlag is None or forecast is None:
+        return {'data': [],
+            'layout': go.Layout(
+            #xaxis={'title': 'xyz'},
+            #yaxis={'title': 'secDD', },
+            #margin={'l': 40, 'b': 40, 't': 10, 'r': 10},
+            #legend={'x': 0, 'y': 1},
+            hovermode='closest'
+            )
+            }
+
+    if 'Yes' in showDecompositionGraphFlag and 'Yes' in forecast:
+        print("Sub-graph ================ section")
+        # data, df_grp = func.forecast(category=primary,parameter=items,targetAttribute=targetAttribute,aggregateUsing=aggrUsing,countryHoliday=holiday,
+        #                     typeOfSeasonality=seasonality,confidesneRange=inlineWidth,
+        #                     seasonalityType=checkSeasonality,futureDataPoint=forecastSlider)
+        while(len(func.df_grpData) < 1):
+            time.sleep(0.25)
+        
+        print(f'Data found {func.df_grpData.shape}')
+        if func.forecastData is None and func.df_grpData is None:
+            print('Exiting...')
+            return {'data': [],
+            'layout': go.Layout(
+            #xaxis={'title': 'xyz'},
+            #yaxis={'title': 'secDD', },
+            #margin={'l': 40, 'b': 40, 't': 10, 'r': 10},
+            #legend={'x': 0, 'y': 1},
+            hovermode='closest'
+            )
+            }
+        return func.getDecompositionGraph(forecast=func.forecastData ,df_grp=func.df_grpData, holiday= holiday,checkSeasonality= checkSeasonality)
+    else:
+        return {'data': [],
+            'layout': go.Layout(
+            #xaxis={'title': 'xyz'},
+            #yaxis={'title': 'secDD', },
+            #margin={'l': 40, 'b': 40, 't': 10, 'r': 10},
+            #legend={'x': 0, 'y': 1},
+            hovermode='closest'
+            )
+            } 
+
+# Filter Component callback methods
+
+
+        
+@app.callback( 
+    Output('Invoice', 'options'),
+    [Input('showOnlyAvailableDataPoints', "value"),
+    Input('primaryAttribute', "value"),
+    Input('itemsDropDown', "value"),
+    Input('qtyOrAmt', "value"),
+    ])
+def updateInvoice(showOnlyAvailableData, primaryAttribute, itemsDropDown, qtyOrAmt):
+    print(showOnlyAvailableData)
+    if len(['Quantity', 'Price']) > 1:
+        if qtyOrAmt == 'Quantity':
+            forecastColumn = 'Quantity'
+        else:
+            forecastColumn = 'Price'
+    else:
+        forecastColumn = 'Quantity' 
+
+    if len(showOnlyAvailableData) < 1: 
+        return func.getItems(category='Invoice')
+    else:
+        if len(itemsDropDown)<1:
+            return func.getItems(category='Invoice')
+        
+        #data = func.df
+        ''' Filter the Data using primary attribute '''
+        temp = pd.DataFrame()
+        for item in itemsDropDown:
+            temp = pd.concat([temp,func.df[func.df[primaryAttribute]== item]],axis=0).reset_index(drop=True)
+        temp = func.filterDataOnParamter(df=temp, forecastColumn=forecastColumn)
+        
+        temp = pd.DataFrame(temp.groupby('Invoice')[forecastColumn].sum()).reset_index().sort_values(by=forecastColumn, ascending=False)
+        return func.getItems(category='Invoice', data=temp)
+
+        
+
+
+       
+@app.callback( 
+    Output('StockCode', 'options'),
+    [Input('showOnlyAvailableDataPoints', "value"),
+    Input('primaryAttribute', "value"),
+    Input('itemsDropDown', "value"),
+    Input('qtyOrAmt', "value"),
+    Input('Invoice', 'value'),
+    ])
+def updateStockCode (showOnlyAvailableData, primaryAttribute, itemsDropDown, qtyOrAmt, Invoice, ):
+    print(showOnlyAvailableData)
+    if len(['Quantity', 'Price']) > 1:
+        if qtyOrAmt == 'Quantity':
+            forecastColumn = 'Quantity'
+        else:
+            forecastColumn = 'Price'
+    else:
+        forecastColumn = 'Quantity' 
+
+    if len(showOnlyAvailableData) < 1: 
+        return func.getItems(category='StockCode')
+    else:
+        if len(itemsDropDown)<1:
+            return func.getItems(category='StockCode')
+        
+        #data = func.df
+        ''' Filter the Data using primary attribute '''
+        temp = pd.DataFrame()
+        for item in itemsDropDown:
+            temp = pd.concat([temp,func.df[func.df[primaryAttribute]== item]],axis=0).reset_index(drop=True)
+        temp = func.filterDataOnParamter(df=temp, forecastColumn=forecastColumn , category_0 = Invoice  )
+        
+        temp = pd.DataFrame(temp.groupby('StockCode')[forecastColumn].sum()).reset_index().sort_values(by=forecastColumn, ascending=False)
+        return func.getItems(category='StockCode', data=temp)
+
+        
+       
+@app.callback( 
+    Output('CustomerID', 'options'),
+    [Input('showOnlyAvailableDataPoints', "value"),
+    Input('primaryAttribute', "value"),
+    Input('itemsDropDown', "value"),
+    Input('qtyOrAmt', "value"),
+    Input('Invoice', 'value'),Input('StockCode', 'value'),
+    ])
+def updateCustomerID (showOnlyAvailableData, primaryAttribute, itemsDropDown, qtyOrAmt, Invoice,StockCode, ):
+    print(showOnlyAvailableData)
+    if len(['Quantity', 'Price']) > 1:
+        if qtyOrAmt == 'Quantity':
+            forecastColumn = 'Quantity'
+        else:
+            forecastColumn = 'Price'
+    else:
+        forecastColumn = 'Quantity' 
+
+    if len(showOnlyAvailableData) < 1: 
+        return func.getItems(category='Customer ID')
+    else:
+        if len(itemsDropDown)<1:
+            return func.getItems(category='Customer ID')
+        
+        #data = func.df
+        ''' Filter the Data using primary attribute '''
+        temp = pd.DataFrame()
+        for item in itemsDropDown:
+            temp = pd.concat([temp,func.df[func.df[primaryAttribute]== item]],axis=0).reset_index(drop=True)
+        temp = func.filterDataOnParamter(df=temp, forecastColumn=forecastColumn , category_0 = Invoice,  category_1 = StockCode  )
+        
+        temp = pd.DataFrame(temp.groupby('Customer ID')[forecastColumn].sum()).reset_index().sort_values(by=forecastColumn, ascending=False)
+        return func.getItems(category='Customer ID', data=temp)
+
+        
+       
+@app.callback( 
+    Output('Country', 'options'),
+    [Input('showOnlyAvailableDataPoints', "value"),
+    Input('primaryAttribute', "value"),
+    Input('itemsDropDown', "value"),
+    Input('qtyOrAmt', "value"),
+    Input('Invoice', 'value'),Input('StockCode', 'value'),Input('CustomerID', 'value'),
+    ])
+def updateCountry (showOnlyAvailableData, primaryAttribute, itemsDropDown, qtyOrAmt, Invoice,StockCode,CustomerID, ):
+    print(showOnlyAvailableData)
+    if len(['Quantity', 'Price']) > 1:
+        if qtyOrAmt == 'Quantity':
+            forecastColumn = 'Quantity'
+        else:
+            forecastColumn = 'Price'
+    else:
+        forecastColumn = 'Quantity' 
+
+    if len(showOnlyAvailableData) < 1: 
+        return func.getItems(category='Country')
+    else:
+        if len(itemsDropDown)<1:
+            return func.getItems(category='Country')
+        
+        #data = func.df
+        ''' Filter the Data using primary attribute '''
+        temp = pd.DataFrame()
+        for item in itemsDropDown:
+            temp = pd.concat([temp,func.df[func.df[primaryAttribute]== item]],axis=0).reset_index(drop=True)
+        temp = func.filterDataOnParamter(df=temp, forecastColumn=forecastColumn , category_0 = Invoice,  category_1 = StockCode,  category_2 = CustomerID  )
+        
+        temp = pd.DataFrame(temp.groupby('Country')[forecastColumn].sum()).reset_index().sort_values(by=forecastColumn, ascending=False)
+        return func.getItems(category='Country', data=temp)
+
+        
+
+
+
 
 
 

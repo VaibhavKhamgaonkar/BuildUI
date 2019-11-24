@@ -59,6 +59,86 @@ class Lookup_layout():
             """
 
 
+    def firstCategoryComponentCallback(self, category):
+        return """
+
+        
+@app.callback( """ + f"""
+    Output('{category.replace(' ','')}', 'options'),
+    [Input('showOnlyAvailableDataPoints', "value"),
+    Input('primaryAttribute', "value"),
+    Input('itemsDropDown', "value"),
+    Input('qtyOrAmt', "value"),
+    ])
+def update{category.replace(' ','')}(showOnlyAvailableData, primaryAttribute, itemsDropDown, qtyOrAmt):
+    print(showOnlyAvailableData)""" + f"""
+    if len({self.targetColumns}) > 1:
+        if qtyOrAmt == '{self.targetColumns[0]}':
+            forecastColumn = '{self.targetColumns[0]}'
+        else:
+            forecastColumn = '{self.targetColumns[1]}'
+    else:
+        forecastColumn = '{self.targetColumns[0]}' """ + f"""
+
+    if len(showOnlyAvailableData) < 1: 
+        return func.getItems(category='{category}')
+    else:
+        if len(itemsDropDown)<1:
+            return func.getItems(category='{category}')
+        
+        #data = func.df
+        ''' Filter the Data using primary attribute '''
+        temp = pd.DataFrame()
+        for item in itemsDropDown:
+            temp = pd.concat([temp,func.df[func.df[primaryAttribute]== item]],axis=0).reset_index(drop=True)
+        temp = func.filterDataOnParamter(df=temp, forecastColumn=forecastColumn)
+        
+        temp = pd.DataFrame(temp.groupby('{category}')[forecastColumn].sum()).reset_index().sort_values(by=forecastColumn, ascending=False)
+        return func.getItems(category='{category}', data=temp)
+
+        """
+
+    def CategoryComponentCallback(self, category, inp, statement, statement2):
+        return """
+       
+@app.callback( """ + f"""
+    Output('{category.replace(' ','')}', 'options'),
+    [Input('showOnlyAvailableDataPoints', "value"),
+    Input('primaryAttribute', "value"),
+    Input('itemsDropDown', "value"),
+    Input('qtyOrAmt', "value"),
+    {inp}
+    ])
+def update{category.replace(' ','')}""" + f""" {statement} ):
+    print(showOnlyAvailableData)""" + f"""
+    if len({self.targetColumns}) > 1:
+        if qtyOrAmt == '{self.targetColumns[0]}':
+            forecastColumn = '{self.targetColumns[0]}'
+        else:
+            forecastColumn = '{self.targetColumns[1]}'
+    else:
+        forecastColumn = '{self.targetColumns[0]}' """ + f"""
+
+    if len(showOnlyAvailableData) < 1: 
+        return func.getItems(category='{category}')
+    else:
+        if len(itemsDropDown)<1:
+            return func.getItems(category='{category}')
+        
+        #data = func.df
+        ''' Filter the Data using primary attribute '''
+        temp = pd.DataFrame()
+        for item in itemsDropDown:
+            temp = pd.concat([temp,func.df[func.df[primaryAttribute]== item]],axis=0).reset_index(drop=True)""" + f"""
+        {statement2}  )
+        
+        temp = pd.DataFrame(temp.groupby('{category}')[forecastColumn].sum()).reset_index().sort_values(by=forecastColumn, ascending=False)
+        return func.getItems(category='{category}', data=temp)
+
+        """
+    
+
+
 
 
     def buildToolkit(self, item):
@@ -509,8 +589,21 @@ if __name__ == '__main__':
 
     def callBacks(self,):
         temp = ''
+        allCat = ''
+        inp = ''
+        filterCat = self.firstCategoryComponentCallback(category=self.categories[0].replace(' ',''))
+        statement = f"(showOnlyAvailableData, primaryAttribute, itemsDropDown, qtyOrAmt, "
+        statement2 = f"temp = func.filterDataOnParamter(df=temp, forecastColumn=forecastColumn "
+
         for cat in self.categories:
             temp += f"""Input('{cat.replace(' ','')}', "value"),"""
+
+        for cat, previous, argument in zip(self.categories[1:], self.categories[0:-1], self.creatParamters(self.noOfCatColumns,'').split(',')[0:-1]):
+            inp += f"Input('{previous.replace(' ','')}', 'value'),"
+            statement += f"{previous.replace(' ','')}," 
+            statement2 += f", {argument} = {previous.replace(' ','')}"
+            allCat += self.CategoryComponentCallback(category=cat,inp=inp, statement= statement, statement2=statement2)
+            
         
         temp1 = """def updateDecompositionState(forecastFlag,holiday,seasonality,checkSeasonality,inlineWidth,itemsDropDown,forecastSlider,
                              aggrUsing, graphType """
@@ -872,6 +965,67 @@ def ClearShowForecastFlag(targetAttribute):
         }
 
 
+#for decomposition Graph:------------
+
+@app.callback(Output('subParameterGraph', 'figure'), 
+    [Input('showDecompositionGraph', "value"),
+    Input('showForcast', "value"),
+    Input('holiday', "value"),
+    #Input('seasonality', "value"),
+    Input('checkSeasonality', "value"),
+    ])
+def updateSubparameterGraph(showDecompositionGraphFlag,forecast, holiday, checkSeasonality):
+
+    if showDecompositionGraphFlag is None or forecast is None:
+        return {'data': [],
+            'layout': go.Layout(
+            #xaxis={'title': 'xyz'},
+            #yaxis={'title': 'secDD', },
+            #margin={'l': 40, 'b': 40, 't': 10, 'r': 10},
+            #legend={'x': 0, 'y': 1},
+            hovermode='closest'
+            )
+            }
+
+    if 'Yes' in showDecompositionGraphFlag and 'Yes' in forecast:
+        print("Sub-graph ================ section")
+        # data, df_grp = func.forecast(category=primary,parameter=items,targetAttribute=targetAttribute,aggregateUsing=aggrUsing,countryHoliday=holiday,
+        #                     typeOfSeasonality=seasonality,confidesneRange=inlineWidth,
+        #                     seasonalityType=checkSeasonality,futureDataPoint=forecastSlider)
+        while(len(func.df_grpData) < 1):
+            time.sleep(0.25)
+        
+        print(f'Data found {func.df_grpData.shape}')
+        if func.forecastData is None and func.df_grpData is None:
+            print('Exiting...')
+            return {'data': [],
+            'layout': go.Layout(
+            #xaxis={'title': 'xyz'},
+            #yaxis={'title': 'secDD', },
+            #margin={'l': 40, 'b': 40, 't': 10, 'r': 10},
+            #legend={'x': 0, 'y': 1},
+            hovermode='closest'
+            )
+            }
+        return func.getDecompositionGraph(forecast=func.forecastData ,df_grp=func.df_grpData, holiday= holiday,checkSeasonality= checkSeasonality)
+    else:
+        return {'data': [],
+            'layout': go.Layout(
+            #xaxis={'title': 'xyz'},
+            #yaxis={'title': 'secDD', },
+            #margin={'l': 40, 'b': 40, 't': 10, 'r': 10},
+            #legend={'x': 0, 'y': 1},
+            hovermode='closest'
+            )
+            } """ + f"""
+
+# Filter Component callback methods
+{filterCat}
+
+{allCat}
+
+
+
 
 
 
@@ -907,9 +1061,6 @@ def ClearShowForecastFlag(targetAttribute):
 
 
         """
-
-
-
 
 
 

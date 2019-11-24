@@ -215,6 +215,65 @@ class Functions():
         return fig
 
             
+    def getDecompositionGraph(self,forecast, df_grp, holiday, checkSeasonality):
+        #print(forecast.columns)
+        referCode = {'W':'Weekly',
+                    'M': 'monthly',
+                    'D':'Daily',
+                    'Y':'yearly',
+                    'C':'CustomDates'
+                        }
+
+        fig = go.Figure()
+        fig = make_subplots(rows=2, cols=2, subplot_titles=('Trend', 'Holidays', f'{referCode[checkSeasonality]} Trend'))
+        # Add traces
+        fig.add_trace(go.Scatter(x=forecast['ds'].iloc[len(df_grp):], y=forecast['trend_lower'].iloc[len(df_grp):].values,
+                            mode='lines',
+                                opacity= 0.7,
+                                #fill='tonextx',
+                                fillcolor='#75797d',
+                                marker_color= '#d2d5d9',
+                                name='LowerBound'),row=1,col=1)
+        fig.add_trace(go.Scatter(x=forecast['ds'].loc[len(df_grp):], y=forecast['trend_upper'].iloc[len(df_grp):].values,
+                                mode='lines',
+                                #opacity= 0.1,
+                                opacity= 0.7,
+                                    fill='tonextx',
+                                    fillcolor= '#75797d', #'turquoise',
+                                marker_color= '#75797d',
+                            name='UpperBound'),row=1,col=1)
+        fig.add_trace(go.Scatter(x=forecast['ds'], y=forecast['trend'],
+                            mode='lines',
+                                opacity= 1,
+                                #fill='tonextx',
+                                #fillcolor='#afc9c8',
+                                #marker_color= '#afc9c8',
+
+                            name='LowerBound'), row=1,col=1)
+        if holiday is not None:
+            fig.add_trace(go.Scatter(x=forecast['ds'], y=[str(item*100.0) +'%' for item in forecast['holidays']],
+                            mode='lines',
+                                opacity= 0.8,
+                                text = [str(np.round(item*100.0,3)) +'%' for item in forecast['holidays']],
+                                #fill='tonextx',
+                                #fillcolor='#afc9c8',
+                                #marker_color= '#afc9c8',
+
+                            name='Holiday'), row=1,col=2)
+
+        fig.add_trace(go.Scatter(x=forecast['ds'], y=forecast[referCode[checkSeasonality]],
+                                mode='lines',
+                                    opacity= 0.8,
+                                    #fill='tonextx',
+                                    #fillcolor='#afc9c8',
+                                    #marker_color= '#afc9c8',
+
+                                name=f'{referCode[checkSeasonality]} Trend'), row=2,col=1)
+
+        fig.update_layout(title= f"Decomposition Plot")
+        return fig
+
+        
     def getData(self, primaryCol, parameters, aggrFlag, targetCol, category_0, category_1, category_2, category_3, forecastColumn ):
 
         '''  forcastColumn is the name of collumn used for forcasting either quantity or Amount'''

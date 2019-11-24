@@ -483,6 +483,7 @@ if __name__ == "__main__":
     x.append(obj.buildFunctionKit('getItems'))
     x.append(obj.buildFunctionKit('forecast'))
     x.append(obj.buildFunctionKit('getGraph'))
+    x.append(obj.buildFunctionKit('getdecompositiongraph')) 
     x.append(obj.buildFunctionKit('getData'))
     x.append(obj.buildFunctionKit('filterData'))
 
