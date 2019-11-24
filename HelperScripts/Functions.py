@@ -30,8 +30,9 @@ class Functions():
                 for key in x.keys():
                     self.df = pd.concat([self.df,x[key]],axis=0)
                 self.df.reset_index(inplace=True, drop=True)
-
-        print(self.df.shape)
+        for col in ['Invoice', 'StockCode', 'Customer ID', 'Country']: 
+            self.df[col] = self.df[col].apply(str)
+        print(self.df.shape) 
         self.value = None
         self.forecastData = ''
         self.df_grpData = ''
@@ -115,7 +116,7 @@ class Functions():
         if parameter is None:
             return finalDf
 
-        df = self.filterDataOnParamter(self.df, category_0, category_1, category_2, category_3)
+        df = self.filterDataOnParamter(self.df,forecastColumn, category_0, category_1, category_2, category_3)
         # df = self.filterDataOnParamter(self.df, country, companyCode, purchasingGrp, profitCenter, costCenter, superCommodity, primaryCommodity, vendorDesc, glAccount, materialGroup)
         tempdf = df[df[category] == parameter[0]]
         df_grp = pd.DataFrame(tempdf.groupby(by=[targetAttribute])[forecastColumn].sum())
@@ -283,7 +284,7 @@ class Functions():
         if parameters is None:
             return finalDf
 
-        df = self.filterDataOnParamter(self.df, category_0, category_1, category_2, category_3)
+        df = self.filterDataOnParamter(self.df, forecastColumn, category_0, category_1, category_2, category_3)
         if len(parameters)==1: 
             if targetCol == 'InvoiceDate':
                 tempdf = df[df[primaryCol] == parameters[0]]
@@ -339,22 +340,22 @@ class Functions():
         if category_0 is None:
             df = df
         else: 
-            df[df['Invoice']==category_0]
+           df = df[df['Invoice']==category_0]
           
         if  category_1 is None:
             df = df
         else: 
-            df[df['StockCode']== category_1]
+           df = df[df['StockCode']== category_1]
           
         if  category_2 is None:
             df = df
         else: 
-            df[df['Customer ID']== category_2]
+           df = df[df['Customer ID']== category_2]
           
         if  category_3 is None:
             df = df
         else: 
-            df[df['Country']== category_3]
+           df = df[df['Country']== category_3]
           
         return df
 

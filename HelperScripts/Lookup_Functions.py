@@ -36,7 +36,7 @@ class Lookup_Functions():
         if {cat} is None:
             df = df
         else: 
-            df[df['{val}']=={cat}]
+           df = df[df['{val}']=={cat}]
          """
 
     def creatParamters(self, number, paramterList):
@@ -91,9 +91,10 @@ class Functions():
                 print(f'Creating Dataframe from dictinary')
                 for key in x.keys():
                     self.df = pd.concat([self.df,x[key]],axis=0)
-                self.df.reset_index(inplace=True, drop=True)
-        
-        print(self.df.shape)
+                self.df.reset_index(inplace=True, drop=True)""" + f"""
+        for col in {self.categories}: 
+            self.df[col] = self.df[col].apply(str)
+        print(self.df.shape) """+"""
         self.value = None
         self.forecastData = ''
         self.df_grpData = ''
@@ -177,7 +178,7 @@ class Functions():
         
         elif item.lower() == 'forecast':
             para = 'def forecast(self, category, parameter, targetAttribute, aggrFlag, countryHoliday,typeOfSeasonality,confidesneRange, seasonalityType , futureDataPoint'
-            param = 'df = self.filterDataOnParamter(self.df'
+            param = 'df = self.filterDataOnParamter(self.df,forecastColumn'
             return f"""
     {self.creatParamters(self.noOfCatColumns, para)},forecastColumn ):
 
@@ -358,7 +359,7 @@ class Functions():
 
         elif item.lower() == 'getdata':
             para = 'def getData(self, primaryCol, parameters, aggrFlag, targetCol'
-            param = 'df = self.filterDataOnParamter(self.df'
+            param = 'df = self.filterDataOnParamter(self.df, forecastColumn'
             return f"""
     {self.creatParamters(self.noOfCatColumns, para)}, forecastColumn ):
         

@@ -485,6 +485,7 @@ def updateDecompositionState(forecastFlag,holiday,seasonality,checkSeasonality,i
     ])
 def update_graph(primary, items, targetAttribute,  aggrUsing, graphType,
                 showForcast,forecastSlider,holiday,seasonality,checkSeasonality,inlineWidth , category_0, category_1, category_2, category_3 , qtyOrAmt):
+    print(category_0,category_1, category_2,category_3)
     traces = []
     COLORS = np.random.randint(0,255, size=(len(items), 1, 3), dtype= 'uint8') 
 
